@@ -1,0 +1,17 @@
+//
+//  PrefixHeader.pch
+//  BLEMeshChat
+//
+//  Created by Christopher Ballinger on 10/10/14.
+//  Copyright (c) 2014 Christopher Ballinger. All rights reserved.
+//
+
+#ifndef BLEMeshChat_PrefixHeader_pch
+#define BLEMeshChat_PrefixHeader_pch
+
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+#import <CoreBluetooth/CoreBluetooth.h>
+#import "BLELog.h"
+
+#endif

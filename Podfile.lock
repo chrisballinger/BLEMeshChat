@@ -1,0 +1,29 @@
+PODS:
+  - CocoaLumberjack (1.9.2):
+    - CocoaLumberjack/Extensions
+  - CocoaLumberjack/Core (1.9.2)
+  - CocoaLumberjack/Extensions (1.9.2):
+    - CocoaLumberjack/Core
+  - Mantle (1.5.1):
+    - Mantle/extobjc
+  - Mantle/extobjc (1.5.1)
+  - PureLayout (1.1.0)
+  - YapDatabase (2.5.3):
+    - YapDatabase/standard
+  - YapDatabase/common (2.5.3):
+    - CocoaLumberjack (~> 1)
+  - YapDatabase/standard (2.5.3):
+    - YapDatabase/common
+
+DEPENDENCIES:
+  - Mantle (~> 1.4)
+  - PureLayout (~> 1.1)
+  - YapDatabase (~> 2.5)
+
+SPEC CHECKSUMS:
+  CocoaLumberjack: 205769c032b5fef85b92472046bcc8b7e7c8a817
+  Mantle: d7c5ac734579ec751c58fecbf56189853056c58c
+  PureLayout: c8960fa0f3b40d849d5e177d699d0148faa63b63
+  YapDatabase: 096e860167b04e629b88bea33dfb7a4153279bb0
+
+COCOAPODS: 0.34.2
