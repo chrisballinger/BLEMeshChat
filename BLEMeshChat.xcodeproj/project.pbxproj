@@ -18,6 +18,8 @@
 		D9C4260E19E8A513004F7335 /* BLEScanner.m in Sources */ = {isa = PBXBuildFile; fileRef = D9C4260D19E8A513004F7335 /* BLEScanner.m */; };
 		D9C4261119E8A52B004F7335 /* BLEBroadcaster.m in Sources */ = {isa = PBXBuildFile; fileRef = D9C4261019E8A52B004F7335 /* BLEBroadcaster.m */; };
 		D9C4261319E8A617004F7335 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9C4261219E8A617004F7335 /* CoreBluetooth.framework */; };
+		D9C4261A19E8B4CC004F7335 /* BLEInputChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = D9C4261919E8B4CC004F7335 /* BLEInputChannel.m */; };
+		D9C4261D19E8B4E2004F7335 /* BLEOutputChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = D9C4261C19E8B4E2004F7335 /* BLEOutputChannel.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -54,6 +56,10 @@
 		D9C4261219E8A617004F7335 /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = System/Library/Frameworks/CoreBluetooth.framework; sourceTree = SDKROOT; };
 		D9C4261419E8A658004F7335 /* PrefixHeader.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PrefixHeader.pch; sourceTree = "<group>"; };
 		D9C4261519E8AA85004F7335 /* BLELog.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BLELog.h; sourceTree = "<group>"; };
+		D9C4261819E8B4CC004F7335 /* BLEInputChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLEInputChannel.h; sourceTree = "<group>"; };
+		D9C4261919E8B4CC004F7335 /* BLEInputChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLEInputChannel.m; sourceTree = "<group>"; };
+		D9C4261B19E8B4E2004F7335 /* BLEOutputChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLEOutputChannel.h; sourceTree = "<group>"; };
+		D9C4261C19E8B4E2004F7335 /* BLEOutputChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLEOutputChannel.m; sourceTree = "<group>"; };
 		E1441CDBDA6F311CDCBA029F /* Pods.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.release.xcconfig; path = "Pods/Target Support Files/Pods/Pods.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -123,6 +129,10 @@
 				D9C4261019E8A52B004F7335 /* BLEBroadcaster.m */,
 				D9C4260C19E8A513004F7335 /* BLEScanner.h */,
 				D9C4260D19E8A513004F7335 /* BLEScanner.m */,
+				D9C4261B19E8B4E2004F7335 /* BLEOutputChannel.h */,
+				D9C4261C19E8B4E2004F7335 /* BLEOutputChannel.m */,
+				D9C4261819E8B4CC004F7335 /* BLEInputChannel.h */,
+				D9C4261919E8B4CC004F7335 /* BLEInputChannel.m */,
 				D9C4260B19E8A4DB004F7335 /* Model */,
 				D9C425E519E89D9D004F7335 /* BLEAppDelegate.h */,
 				D9C425E619E89D9D004F7335 /* BLEAppDelegate.m */,
@@ -321,6 +331,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				D9C4261119E8A52B004F7335 /* BLEBroadcaster.m in Sources */,
+				D9C4261A19E8B4CC004F7335 /* BLEInputChannel.m in Sources */,
+				D9C4261D19E8B4E2004F7335 /* BLEOutputChannel.m in Sources */,
 				D9C425EA19E89D9D004F7335 /* BLEMainViewController.m in Sources */,
 				D9C4260E19E8A513004F7335 /* BLEScanner.m in Sources */,
 				D9C4260A19E8A4D5004F7335 /* BLEDevice.m in Sources */,

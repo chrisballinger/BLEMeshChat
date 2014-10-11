@@ -27,8 +27,14 @@ static const NSString *kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdenti
     return self;
 }
 
-- (void) startScanning {
-    [self.centralManager scanForPeripheralsWithServices:nil options:nil];
+- (BOOL) startScanning {
+    if (self.centralManager.state == CBCentralManagerStatePoweredOn) {
+        [self.centralManager scanForPeripheralsWithServices:nil options:nil];
+        return YES;
+    } else {
+        DDLogWarn(@"Central Manager not powered on!");
+        return NO;
+    }
 }
 
 - (void) stopScanning {
@@ -39,6 +45,9 @@ static const NSString *kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdenti
 
 - (void)centralManagerDidUpdateState:(CBCentralManager *)central {
     DDLogVerbose(@"%@: %@ %d", THIS_FILE, THIS_METHOD, (int)central.state);
+    if (central.state == CBCentralManagerStatePoweredOn) {
+        [self startScanning];
+    }
 }
 
 - (void) centralManager:(CBCentralManager *)central willRestoreState:(NSDictionary *)dict {
@@ -46,7 +55,7 @@ static const NSString *kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdenti
 }
 
 - (void)centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary *)advertisementData RSSI:(NSNumber *)RSSI {
-    DDLogVerbose(@"%@: %@ %@", THIS_FILE, THIS_METHOD, peripheral);
+    DDLogVerbose(@"didDiscoverPeripheral: %@\tadvertisementData: %@\tRSSI:%@", peripheral, advertisementData, RSSI);
 }
 
 @end

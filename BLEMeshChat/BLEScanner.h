@@ -8,7 +8,11 @@
 
 @interface BLEScanner : NSObject <CBCentralManagerDelegate>
 
-- (void) startScanning;
+/**
+ * Starts scanning.
+ * @return success
+ */
+- (BOOL) startScanning;
 - (void) stopScanning;
 
 @end

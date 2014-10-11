@@ -8,7 +8,11 @@
 
 @interface BLEBroadcaster : NSObject <CBPeripheralManagerDelegate>
 
-- (void) startBroadcasting;
+/** 
+ * Starts broadcasting.
+ * @return success
+ */
+- (BOOL) startBroadcasting;
 - (void) stopBroadcasting;
 
 @end
