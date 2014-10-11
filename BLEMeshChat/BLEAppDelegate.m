@@ -9,6 +9,7 @@
 #import "BLEAppDelegate.h"
 #import "BLEMainViewController.h"
 #import "DDTTYLogger.h"
+#import "DDASLLogger.h"
 
 @interface BLEAppDelegate ()
 
@@ -19,6 +20,16 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     [DDLog addLogger:[DDTTYLogger sharedInstance]];
+    [DDLog addLogger:[DDASLLogger sharedInstance]];
+    id centralLaunch = launchOptions[UIApplicationLaunchOptionsBluetoothCentralsKey];
+    if (centralLaunch) {
+        DDLogInfo(@"didFinishLaunchingWithOptions with UIApplicationLaunchOptionsBluetoothCentralsKey");
+    }
+    id peripheralLaunch = launchOptions[UIApplicationLaunchOptionsBluetoothPeripheralsKey];
+    if (peripheralLaunch) {
+        DDLogInfo(@"didFinishLaunchingWithOptions with UIApplicationLaunchOptionsBluetoothPeripheralsKey");
+    }
+    
     self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
     self.window.rootViewController = [[BLEMainViewController alloc] init];
     [self.window makeKeyAndVisible];
