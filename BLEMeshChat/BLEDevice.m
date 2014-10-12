@@ -10,4 +10,12 @@
 
 @implementation BLEDevice
 
++ (NSString*) collection {
+    return NSStringFromClass([self class]);
+}
+
+- (NSString*) uniqueIdentifier {
+    return self.uuid.UUIDString;
+}
+
 @end

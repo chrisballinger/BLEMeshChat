@@ -8,7 +8,7 @@
 
 #import "BLEScanner.h"
 
-static const NSString *kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdentifier";
+static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdentifier";
 
 @interface BLEScanner()
 @property (nonatomic, strong) CBCentralManager *centralManager;

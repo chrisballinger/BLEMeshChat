@@ -7,7 +7,8 @@
 //
 
 #import "BLEAppDelegate.h"
-#import "BLEMainViewController.h"
+#import "BLEBroadcastViewController.h"
+#import "BLEScannerViewController.h"
 #import "DDTTYLogger.h"
 #import "DDASLLogger.h"
 
@@ -31,7 +32,15 @@
     }
     
     self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
-    self.window.rootViewController = [[BLEMainViewController alloc] init];
+    UITabBarController *tabBarController = [[UITabBarController alloc] init];
+    BLEScannerViewController *scannerVC = [[BLEScannerViewController alloc] init];
+    UINavigationController *scannerNav = [[UINavigationController alloc] initWithRootViewController:scannerVC];
+    scannerNav.tabBarItem.image = [UIImage imageNamed:@"BLEScanIcon"];
+    BLEBroadcastViewController *broadcastVC = [[BLEBroadcastViewController alloc] init];
+    UINavigationController *broadcastNav = [[UINavigationController alloc] initWithRootViewController:broadcastVC];
+    broadcastNav.tabBarItem.image = [UIImage imageNamed:@"BLEBroadcastIcon"];
+    tabBarController.viewControllers = @[scannerNav, broadcastNav];
+    self.window.rootViewController = tabBarController;
     [self.window makeKeyAndVisible];
     return YES;
 }

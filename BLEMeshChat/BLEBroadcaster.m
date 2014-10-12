@@ -10,7 +10,8 @@
 
 static NSString * const kBLEBroadcasterRestoreIdentifier = @"kBLEBroadcasterRestoreIdentifier";
 static NSString * const kBLEMeshChatServiceUUID = @"96F22BCA-F08C-43F9-BF7D-EEBC579C94D2";
-static NSString * const kBLEMeshChatCharacteristicUUID = @"21C7DE8E-B0D0-4A41-9B22-78221277E2AA";
+static NSString * const kBLEMeshChatReadCharacteristicUUID = @"21C7DE8E-B0D0-4A41-9B22-78221277E2AA";
+static NSString * const kBLEMeshChatWriteCharacteristicUUID = @"63D14BAD-ABDE-44BC-BFCC-453AE2C8D2C8";
 
 @interface BLEBroadcaster()
 @property (nonatomic, strong) CBPeripheralManager *peripheralManager;
@@ -35,13 +36,17 @@ static NSString * const kBLEMeshChatCharacteristicUUID = @"21C7DE8E-B0D0-4A41-9B
     if (self.peripheralManager.state == CBPeripheralManagerStatePoweredOn) {
         CBUUID *meshChatServiceUUID = [CBUUID UUIDWithString:kBLEMeshChatServiceUUID];
         self.meshChatService = [[CBMutableService alloc] initWithType:meshChatServiceUUID primary:YES];
-        CBUUID *meshChatCharacteristicUUID = [CBUUID UUIDWithString:kBLEMeshChatCharacteristicUUID];
+        CBUUID *meshChatReadCharacteristicUUID = [CBUUID UUIDWithString:kBLEMeshChatReadCharacteristicUUID];
+        CBUUID *meshChatWriteCharacteristicUUID = [CBUUID UUIDWithString:kBLEMeshChatWriteCharacteristicUUID];
         
-        NSString *testValue = @"testValue";
-        NSData *testData = [testValue dataUsingEncoding:NSUTF8StringEncoding];
+        //NSString *testValue = @"testValue";
+        //NSData *testData = [testValue dataUsingEncoding:NSUTF8StringEncoding];
         
-        CBMutableCharacteristic *test = [[CBMutableCharacteristic alloc] initWithType:meshChatCharacteristicUUID properties:CBCharacteristicPropertyRead value:testData permissions:CBAttributePermissionsReadable];
-        self.meshChatService.characteristics = @[test];
+        CBMutableCharacteristic *readCharacteristic = [[CBMutableCharacteristic alloc] initWithType:meshChatReadCharacteristicUUID properties:CBCharacteristicPropertyRead value:nil permissions:CBAttributePermissionsReadable];
+        
+        CBMutableCharacteristic *writeCharacteristic = [[CBMutableCharacteristic alloc] initWithType:meshChatWriteCharacteristicUUID properties:CBCharacteristicPropertyWrite value:nil permissions:CBAttributePermissionsWriteable];
+        
+        self.meshChatService.characteristics = @[readCharacteristic, writeCharacteristic];
         [self.peripheralManager addService:self.meshChatService];
         [self.peripheralManager startAdvertising:@{CBAdvertisementDataServiceUUIDsKey: @[self.meshChatService.UUID],
                                                    CBAdvertisementDataLocalNameKey: @"BLEMeshChat"}];
@@ -95,6 +100,12 @@ static NSString * const kBLEMeshChatCharacteristicUUID = @"21C7DE8E-B0D0-4A41-9B
 
 - (void)peripheralManager:(CBPeripheralManager *)peripheral didReceiveReadRequest:(CBATTRequest *)request {
     DDLogVerbose(@"%@: %@ %@", THIS_FILE, THIS_METHOD, request);
+    
+    NSString *testResponse = @"testResponse";
+    NSData *testResponseData = [testResponse dataUsingEncoding:NSUTF8StringEncoding];
+    
+    request.value = testResponseData;
+    [peripheral respondToRequest:request withResult:CBATTErrorSuccess];
 }
 
 - (void)peripheralManager:(CBPeripheralManager *)peripheral didReceiveWriteRequests:(NSArray *)requests {
