@@ -18,4 +18,9 @@
     return self.uuid.UUIDString;
 }
 
+- (void) setPeripheral:(CBPeripheral*)peripheral {
+    _uuid = peripheral.identifier;
+    _name = peripheral.name;
+}
+
 @end

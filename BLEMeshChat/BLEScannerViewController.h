@@ -12,7 +12,7 @@
 
 @interface BLEScannerViewController : UIViewController <UITableViewDataSource, UITableViewDelegate>
 
-@property (nonatomic, strong) UITableView *deviceTableView;
-@property (nonatomic, strong) BLEScanner *scanner;
+@property (nonatomic, strong, readonly) UITableView *deviceTableView;
+@property (nonatomic, strong, readonly) BLEScanner *scanner;
 
 @end

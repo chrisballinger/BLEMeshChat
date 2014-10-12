@@ -11,5 +11,10 @@
 @interface BLEDatabaseManager : NSObject
 
 @property (nonatomic, strong, readonly) YapDatabase *database;
+@property (nonatomic, strong, readonly) YapDatabaseConnection *readWriteConnection;
+
+@property (nonatomic, strong, readonly) NSString *allDevicesViewName;
+
++ (instancetype) sharedInstance;
 
 @end

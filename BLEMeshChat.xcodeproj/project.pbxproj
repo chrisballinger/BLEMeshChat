@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		5AFAD98C8D32B5D6E0EF9FA3 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D875EBA6B1062FD39A2B28A /* libPods.a */; };
+		D92B37E519EA8AE40047AB38 /* UIViewController+BLE.m in Sources */ = {isa = PBXBuildFile; fileRef = D92B37E419EA8AE40047AB38 /* UIViewController+BLE.m */; };
 		D9BE2D2E19EA0B2600A7A82F /* BLEScannerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D9BE2D2D19EA0B2600A7A82F /* BLEScannerViewController.m */; };
 		D9BE2D3219EA0C3A00A7A82F /* BLEDatabaseManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D9BE2D3119EA0C3A00A7A82F /* BLEDatabaseManager.m */; };
 		D9C425E419E89D9D004F7335 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = D9C425E319E89D9D004F7335 /* main.m */; };
@@ -35,6 +36,8 @@
 /* Begin PBXFileReference section */
 		2D1361F7F24E9C6CD2AF9A4B /* Pods.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.debug.xcconfig; path = "Pods/Target Support Files/Pods/Pods.debug.xcconfig"; sourceTree = "<group>"; };
 		6D875EBA6B1062FD39A2B28A /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		D92B37E319EA8AE40047AB38 /* UIViewController+BLE.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIViewController+BLE.h"; sourceTree = "<group>"; };
+		D92B37E419EA8AE40047AB38 /* UIViewController+BLE.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIViewController+BLE.m"; sourceTree = "<group>"; };
 		D9BE2D2C19EA0B2600A7A82F /* BLEScannerViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLEScannerViewController.h; sourceTree = "<group>"; };
 		D9BE2D2D19EA0B2600A7A82F /* BLEScannerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLEScannerViewController.m; sourceTree = "<group>"; };
 		D9BE2D3019EA0C3A00A7A82F /* BLEDatabaseManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLEDatabaseManager.h; sourceTree = "<group>"; };
@@ -115,6 +118,8 @@
 		D9BE2D3319EA2A8500A7A82F /* Broadcasting */ = {
 			isa = PBXGroup;
 			children = (
+				D9C425E819E89D9D004F7335 /* BLEBroadcastViewController.h */,
+				D9C425E919E89D9D004F7335 /* BLEBroadcastViewController.m */,
 				D9C4260F19E8A52B004F7335 /* BLEBroadcaster.h */,
 				D9C4261019E8A52B004F7335 /* BLEBroadcaster.m */,
 			);
@@ -146,13 +151,11 @@
 			children = (
 				D9BE2D2F19EA0B3400A7A82F /* Scanning */,
 				D9BE2D3319EA2A8500A7A82F /* Broadcasting */,
-				D9BE2D3019EA0C3A00A7A82F /* BLEDatabaseManager.h */,
-				D9BE2D3119EA0C3A00A7A82F /* BLEDatabaseManager.m */,
-				D9C4260B19E8A4DB004F7335 /* Model */,
+				D9C4260B19E8A4DB004F7335 /* Data */,
 				D9C425E519E89D9D004F7335 /* BLEAppDelegate.h */,
 				D9C425E619E89D9D004F7335 /* BLEAppDelegate.m */,
-				D9C425E819E89D9D004F7335 /* BLEBroadcastViewController.h */,
-				D9C425E919E89D9D004F7335 /* BLEBroadcastViewController.m */,
+				D92B37E319EA8AE40047AB38 /* UIViewController+BLE.h */,
+				D92B37E419EA8AE40047AB38 /* UIViewController+BLE.m */,
 				D9C4261519E8AA85004F7335 /* BLELog.h */,
 				D9C4261619E8AB3E004F7335 /* Resources */,
 				D9C425E119E89D9D004F7335 /* Supporting Files */,
@@ -187,13 +190,15 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
-		D9C4260B19E8A4DB004F7335 /* Model */ = {
+		D9C4260B19E8A4DB004F7335 /* Data */ = {
 			isa = PBXGroup;
 			children = (
+				D9BE2D3019EA0C3A00A7A82F /* BLEDatabaseManager.h */,
+				D9BE2D3119EA0C3A00A7A82F /* BLEDatabaseManager.m */,
 				D9C4260819E8A4D5004F7335 /* BLEDevice.h */,
 				D9C4260919E8A4D5004F7335 /* BLEDevice.m */,
 			);
-			name = Model;
+			name = Data;
 			sourceTree = "<group>";
 		};
 		D9C4261619E8AB3E004F7335 /* Resources */ = {
@@ -351,6 +356,7 @@
 				D9C425EA19E89D9D004F7335 /* BLEBroadcastViewController.m in Sources */,
 				D9C4260E19E8A513004F7335 /* BLEScanner.m in Sources */,
 				D9C4260A19E8A4D5004F7335 /* BLEDevice.m in Sources */,
+				D92B37E519EA8AE40047AB38 /* UIViewController+BLE.m in Sources */,
 				D9C425E719E89D9D004F7335 /* BLEAppDelegate.m in Sources */,
 				D9BE2D3219EA0C3A00A7A82F /* BLEDatabaseManager.m in Sources */,
 				D9C425E419E89D9D004F7335 /* main.m in Sources */,

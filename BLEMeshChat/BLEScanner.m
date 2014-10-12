@@ -7,12 +7,15 @@
 //
 
 #import "BLEScanner.h"
+#import "BLEDatabaseManager.h"
+#import "BLEDevice.h"
 
 static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdentifier";
 
 @interface BLEScanner()
 @property (nonatomic, strong) CBCentralManager *centralManager;
 @property (nonatomic) dispatch_queue_t eventQueue;
+@property (nonatomic, strong) YapDatabaseConnection *readConnection;
 @end
 
 @implementation BLEScanner
@@ -23,13 +26,14 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
         _centralManager = [[CBCentralManager alloc] initWithDelegate:self
                                                                      queue:_eventQueue
                                                                    options:@{CBCentralManagerOptionRestoreIdentifierKey: kBLEScannerRestoreIdentifier}];
+        _readConnection = [[BLEDatabaseManager sharedInstance].database newConnection];
     }
     return self;
 }
 
 - (BOOL) startScanning {
     if (self.centralManager.state == CBCentralManagerStatePoweredOn) {
-        [self.centralManager scanForPeripheralsWithServices:nil options:nil];
+        [self.centralManager scanForPeripheralsWithServices:nil options:@{CBCentralManagerScanOptionAllowDuplicatesKey: @YES}];
         return YES;
     } else {
         DDLogWarn(@"Central Manager not powered on!");
@@ -56,6 +60,22 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
 
 - (void)centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary *)advertisementData RSSI:(NSNumber *)RSSI {
     DDLogVerbose(@"didDiscoverPeripheral: %@\tadvertisementData: %@\tRSSI:%@", peripheral, advertisementData, RSSI);
+    NSString *key = peripheral.identifier.UUIDString;
+    [self.readConnection asyncReadWithBlock:^(YapDatabaseReadTransaction *transaction) {
+        BLEDevice *device = [transaction objectForKey:key inCollection:[BLEDevice collection]];
+        if (!device) {
+            device = [[BLEDevice alloc] init];
+        } else {
+            device = [device copy];
+        }
+        [device setPeripheral:peripheral];
+        device.lastSeenRSSI = RSSI;
+        device.lastSeenAdvertisements = advertisementData;
+        device.lastSeenDate = [NSDate date];
+        [[BLEDatabaseManager sharedInstance].readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+            [transaction setObject:device forKey:device.uniqueIdentifier inCollection:[BLEDevice collection]];
+        }];
+    }];
 }
 
 @end

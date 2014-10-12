@@ -12,9 +12,17 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 #import <CoreBluetooth/CoreBluetooth.h>
+
 #import "YapDatabase.h"
+#import "YapDatabaseViewMappings.h"
+#import "YapDatabaseView.h"
+#import "YapDatabaseViewTypes.h"
+
 #import "BLELog.h"
+#import "UIViewController+BLE.h"
+
 #import "Mantle.h"
+
 #import "PureLayout.h"
 
 #endif

@@ -8,15 +8,19 @@
 
 @interface BLEDevice : MTLModel
 
-@property (nonatomic) NSUInteger maximumUpdateValueLength;
-@property (nonatomic, strong) NSUUID *uuid;
-@property (nonatomic, strong) NSString *deviceName;
+@property (nonatomic, strong, readonly) NSUUID *uuid;
+@property (nonatomic, strong, readonly) NSString *name;
 @property (nonatomic) CBPeripheralState state;
+
+@property (nonatomic) NSUInteger maximumUpdateValueLength;
 @property (nonatomic, strong) NSArray *advertisedServices;
 
 @property (nonatomic, strong) NSDate *lastSeenDate;
 @property (nonatomic, strong) NSNumber *lastSeenRSSI;
-@property (nonatomic, strong) NSData *lastSeenAdvertisementData;
+@property (nonatomic, strong) NSDictionary *lastSeenAdvertisements;
+
+/** Sets uuid, deviceName, state from peripheral */
+- (void) setPeripheral:(CBPeripheral*)peripheral;
 
 /** Returns the YapDatabase collection */
 + (NSString*) collection;

@@ -7,6 +7,9 @@
 //
 
 #import "BLEDatabaseManager.h"
+#import "YapDatabaseView.h"
+#import "YapDatabaseViewTypes.h"
+#import "BLEDevice.h"
 
 @implementation BLEDatabaseManager
 
@@ -14,11 +17,43 @@
     if (self = [super init]) {
         NSArray *paths = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
         NSString *applicationSupportDirectory = [paths firstObject];
+        NSString *databaseDirectoryName = @"BLEMeshChat.database";
+        NSString *databaseDirectoryPath = [applicationSupportDirectory stringByAppendingPathComponent:databaseDirectoryName];
+        [[NSFileManager defaultManager] createDirectoryAtPath:databaseDirectoryPath withIntermediateDirectories:YES attributes:nil error:nil];
         NSString *databaseName = @"BLEMeshChat.sqlite";
-        NSString *databasePath = [applicationSupportDirectory stringByAppendingPathComponent:databaseName];
+        NSString *databasePath = [databaseDirectoryPath stringByAppendingPathComponent:databaseName];
         _database = [[YapDatabase alloc] initWithPath:databasePath];
+        _readWriteConnection = [self.database newConnection];
+        [self registerViews];
     }
     return self;
+}
+
+- (void) registerViews {
+    [self registerAllDevicesView];
+}
+
+- (void) registerAllDevicesView {
+    _allDevicesViewName = @"BLEAllDevicesView";
+    YapDatabaseViewGrouping *grouping = [YapDatabaseViewGrouping withKeyBlock:^NSString *(NSString *collection, NSString *key) {
+        return _allDevicesViewName;
+    }];
+    YapDatabaseViewSorting *sorting = [YapDatabaseViewSorting withObjectBlock:^NSComparisonResult(NSString *group, NSString *collection1, NSString *key1, id object1, NSString *collection2, NSString *key2, id object2) {
+        BLEDevice *device1 = object1;
+        BLEDevice *device2 = object2;
+        return [device1.lastSeenDate compare:device2.lastSeenDate];
+    }];
+    YapDatabaseView *databaseView = [[YapDatabaseView alloc] initWithGrouping:grouping sorting:sorting versionTag:@"1" options:nil];
+    [self.database asyncRegisterExtension:databaseView withName:self.allDevicesViewName completionBlock:nil];
+}
+
++ (instancetype) sharedInstance {
+    static id _sharedInstance = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        _sharedInstance = [[[self class] alloc] init];
+    });
+    return _sharedInstance;
 }
 
 @end
