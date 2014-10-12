@@ -10,6 +10,7 @@
 
 static NSString * const kBLEBroadcasterRestoreIdentifier = @"kBLEBroadcasterRestoreIdentifier";
 static NSString * const kBLEMeshChatServiceUUID = @"96F22BCA-F08C-43F9-BF7D-EEBC579C94D2";
+static NSString * const kBLEMeshChatCharacteristicUUID = @"21C7DE8E-B0D0-4A41-9B22-78221277E2AA";
 
 @interface BLEBroadcaster()
 @property (nonatomic, strong) CBPeripheralManager *peripheralManager;
@@ -24,20 +25,26 @@ static NSString * const kBLEMeshChatServiceUUID = @"96F22BCA-F08C-43F9-BF7D-EEBC
         _eventQueue = dispatch_queue_create("BLEBroadcaster Event Queue", 0);
         _peripheralManager = [[CBPeripheralManager alloc] initWithDelegate:self
                                                                      queue:_eventQueue
-                                                                   options:@{CBPeripheralManagerOptionRestoreIdentifierKey: kBLEBroadcasterRestoreIdentifier}];
-        CBUUID *meshChatUUID = [CBUUID UUIDWithString:kBLEMeshChatServiceUUID];
-        _meshChatService = [[CBMutableService alloc] initWithType:meshChatUUID primary:YES];
-        CBUUID *uuid = [CBUUID UUIDWithNSUUID:[NSUUID UUID]];
-        CBMutableCharacteristic *test = [[CBMutableCharacteristic alloc] initWithType:uuid properties:CBCharacteristicPropertyRead value:nil permissions:CBAttributePermissionsReadable];
-        _meshChatService.characteristics = @[test];
-        [_peripheralManager addService:_meshChatService];
+                                                                   options:@{CBPeripheralManagerOptionRestoreIdentifierKey: kBLEBroadcasterRestoreIdentifier,
+                                                                             CBPeripheralManagerOptionShowPowerAlertKey: @YES}];
     }
     return self;
 }
 
 - (BOOL) startBroadcasting {
     if (self.peripheralManager.state == CBPeripheralManagerStatePoweredOn) {
-        [self.peripheralManager startAdvertising:@{CBAdvertisementDataServiceUUIDsKey: @[self.meshChatService.UUID]}];
+        CBUUID *meshChatServiceUUID = [CBUUID UUIDWithString:kBLEMeshChatServiceUUID];
+        self.meshChatService = [[CBMutableService alloc] initWithType:meshChatServiceUUID primary:YES];
+        CBUUID *meshChatCharacteristicUUID = [CBUUID UUIDWithString:kBLEMeshChatCharacteristicUUID];
+        
+        NSString *testValue = @"testValue";
+        NSData *testData = [testValue dataUsingEncoding:NSUTF8StringEncoding];
+        
+        CBMutableCharacteristic *test = [[CBMutableCharacteristic alloc] initWithType:meshChatCharacteristicUUID properties:CBCharacteristicPropertyRead value:testData permissions:CBAttributePermissionsReadable];
+        self.meshChatService.characteristics = @[test];
+        [self.peripheralManager addService:self.meshChatService];
+        [self.peripheralManager startAdvertising:@{CBAdvertisementDataServiceUUIDsKey: @[self.meshChatService.UUID],
+                                                   CBAdvertisementDataLocalNameKey: @"BLEMeshChat"}];
         return YES;
     } else {
         DDLogWarn(@"Peripheral Manager not powered on! %d", (int)self.peripheralManager.state);
@@ -67,6 +74,34 @@ static NSString * const kBLEMeshChatServiceUUID = @"96F22BCA-F08C-43F9-BF7D-EEBC
 }
 
 - (void) peripheralManager:(CBPeripheralManager *)peripheral willRestoreState:(NSDictionary *)dict {
+    DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
+}
+
+- (void)peripheralManager:(CBPeripheralManager *)peripheral didAddService:(CBService *)service error:(NSError *)error {
+    if (error) {
+        DDLogError(@"Error starting service: %@", error.userInfo);
+    } else {
+        DDLogVerbose(@"%@: %@ %@", THIS_FILE, THIS_METHOD, service);
+    }
+}
+
+- (void)peripheralManager:(CBPeripheralManager *)peripheral central:(CBCentral *)central didSubscribeToCharacteristic:(CBCharacteristic *)characteristic {
+    DDLogVerbose(@"%@: %@ %@ %@", THIS_FILE, THIS_METHOD, central, characteristic);
+}
+
+- (void)peripheralManager:(CBPeripheralManager *)peripheral central:(CBCentral *)central didUnsubscribeFromCharacteristic:(CBCharacteristic *)characteristic {
+    DDLogVerbose(@"%@: %@ %@ %@", THIS_FILE, THIS_METHOD, central, characteristic);
+}
+
+- (void)peripheralManager:(CBPeripheralManager *)peripheral didReceiveReadRequest:(CBATTRequest *)request {
+    DDLogVerbose(@"%@: %@ %@", THIS_FILE, THIS_METHOD, request);
+}
+
+- (void)peripheralManager:(CBPeripheralManager *)peripheral didReceiveWriteRequests:(NSArray *)requests {
+    DDLogVerbose(@"%@: %@ %@", THIS_FILE, THIS_METHOD, requests);
+}
+
+- (void)peripheralManagerIsReadyToUpdateSubscribers:(CBPeripheralManager *)peripheral {
     DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
 }
 

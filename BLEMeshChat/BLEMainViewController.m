@@ -21,8 +21,8 @@
     [super viewDidLoad];
     self.broadcaster = [[BLEBroadcaster alloc] init];
     [self.broadcaster startBroadcasting];
-    self.scanner = [[BLEScanner alloc] init];
-    [self.scanner startScanning];
+    //self.scanner = [[BLEScanner alloc] init];
+    //[self.scanner startScanning];
 }
 
 - (void)didReceiveMemoryWarning {
