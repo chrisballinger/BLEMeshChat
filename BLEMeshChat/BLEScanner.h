@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 Christopher Ballinger. All rights reserved.
 //
 
-@interface BLEScanner : NSObject <CBCentralManagerDelegate>
+@interface BLEScanner : NSObject <CBCentralManagerDelegate, CBPeripheralDelegate>
 
 /**
  * Starts scanning.

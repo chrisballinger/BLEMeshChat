@@ -9,7 +9,8 @@
 #import "BLEBroadcaster.h"
 
 static NSString * const kBLEBroadcasterRestoreIdentifier = @"kBLEBroadcasterRestoreIdentifier";
-static NSString * const kBLEMeshChatServiceUUID = @"96F22BCA-F08C-43F9-BF7D-EEBC579C94D2";
+static NSString * const kBLEAndroidMeshChatServiceUUID = @"96F22BCA-F08C-43F9-BF7D-EEBC579C94D2";
+static NSString * const kBLEiOSMeshChatServiceUUID = @"156D9021-3B13-4319-BB42-B94C848999BB";
 static NSString * const kBLEMeshChatReadCharacteristicUUID = @"21C7DE8E-B0D0-4A41-9B22-78221277E2AA";
 static NSString * const kBLEMeshChatWriteCharacteristicUUID = @"63D14BAD-ABDE-44BC-BFCC-453AE2C8D2C8";
 
@@ -34,7 +35,7 @@ static NSString * const kBLEMeshChatWriteCharacteristicUUID = @"63D14BAD-ABDE-44
 
 - (BOOL) startBroadcasting {
     if (self.peripheralManager.state == CBPeripheralManagerStatePoweredOn) {
-        CBUUID *meshChatServiceUUID = [CBUUID UUIDWithString:kBLEMeshChatServiceUUID];
+        CBUUID *meshChatServiceUUID = [CBUUID UUIDWithString:kBLEiOSMeshChatServiceUUID];
         self.meshChatService = [[CBMutableService alloc] initWithType:meshChatServiceUUID primary:YES];
         CBUUID *meshChatReadCharacteristicUUID = [CBUUID UUIDWithString:kBLEMeshChatReadCharacteristicUUID];
         CBUUID *meshChatWriteCharacteristicUUID = [CBUUID UUIDWithString:kBLEMeshChatWriteCharacteristicUUID];

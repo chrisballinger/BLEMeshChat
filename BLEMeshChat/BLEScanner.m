@@ -16,6 +16,7 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
 @property (nonatomic, strong) CBCentralManager *centralManager;
 @property (nonatomic) dispatch_queue_t eventQueue;
 @property (nonatomic, strong) YapDatabaseConnection *readConnection;
+@property (nonatomic, strong) NSMutableDictionary *discoveredPeripherals;
 @end
 
 @implementation BLEScanner
@@ -27,13 +28,15 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
                                                                      queue:_eventQueue
                                                                    options:@{CBCentralManagerOptionRestoreIdentifierKey: kBLEScannerRestoreIdentifier}];
         _readConnection = [[BLEDatabaseManager sharedInstance].database newConnection];
+        _discoveredPeripherals = [NSMutableDictionary dictionary];
     }
     return self;
 }
 
 - (BOOL) startScanning {
     if (self.centralManager.state == CBCentralManagerStatePoweredOn) {
-        [self.centralManager scanForPeripheralsWithServices:nil options:@{CBCentralManagerScanOptionAllowDuplicatesKey: @YES}];
+        BOOL allowDuplicates = NO;
+        [self.centralManager scanForPeripheralsWithServices:nil options:@{CBCentralManagerScanOptionAllowDuplicatesKey: @(allowDuplicates)}];
         return YES;
     } else {
         DDLogWarn(@"Central Manager not powered on!");
@@ -58,8 +61,45 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
     DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
 }
 
+- (void)centralManager:(CBCentralManager *)central didRetrievePeripherals:(NSArray *)peripherals {
+    DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
+}
+
+- (void)centralManager:(CBCentralManager *)central didRetrieveConnectedPeripherals:(NSArray *)peripherals {
+    DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
+}
+
+- (void)centralManager:(CBCentralManager *)central didConnectPeripheral:(CBPeripheral *)peripheral {
+    DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
+    [peripheral discoverServices:nil];
+}
+
+- (void)centralManager:(CBCentralManager *)central didFailToConnectPeripheral:(CBPeripheral *)peripheral error:(NSError *)error {
+    if (error) {
+        DDLogError(@"%@: %@ %@", THIS_FILE, THIS_METHOD, error.userInfo);
+    } else {
+        DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
+    }
+}
+
+- (void)centralManager:(CBCentralManager *)central didDisconnectPeripheral:(CBPeripheral *)peripheral error:(NSError *)error {
+    if (error) {
+        DDLogError(@"%@: %@ %@", THIS_FILE, THIS_METHOD, error.userInfo);
+    } else {
+        DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
+    }
+}
+
 - (void)centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary *)advertisementData RSSI:(NSNumber *)RSSI {
     DDLogVerbose(@"didDiscoverPeripheral: %@\tadvertisementData: %@\tRSSI:%@", peripheral, advertisementData, RSSI);
+    [self.discoveredPeripherals setObject:peripheral forKey:peripheral.identifier.UUIDString];
+    peripheral.delegate = self;
+    if (peripheral.state == CBPeripheralStateDisconnected) {
+        [central connectPeripheral:peripheral options:@{CBConnectPeripheralOptionNotifyOnConnectionKey: @YES,
+                                                        CBConnectPeripheralOptionNotifyOnDisconnectionKey: @YES,
+                                                        CBConnectPeripheralOptionNotifyOnNotificationKey: @YES}];
+    }
+    
     NSString *key = peripheral.identifier.UUIDString;
     [self.readConnection asyncReadWithBlock:^(YapDatabaseReadTransaction *transaction) {
         BLEPeripheralDevice *device = [transaction objectForKey:key inCollection:[BLEPeripheralDevice collection]];
@@ -69,8 +109,8 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
             device = [device copy];
         }
         [device setPeripheral:peripheral];
+        [device setAdvertisementDictionary:advertisementData];
         device.lastSeenRSSI = RSSI;
-        device.lastSeenAdvertisements = advertisementData;
         device.lastSeenDate = [NSDate date];
         device.numberOfTimesSeen++;
         [[BLEDatabaseManager sharedInstance].readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
@@ -78,5 +118,51 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
         }];
     }];
 }
+
+#pragma mark CBPeripheralDelegate methods
+
+- (void)peripheral:(CBPeripheral *)peripheral didDiscoverServices:(NSError *)error {
+    if (error) {
+        DDLogError(@"%@: %@ %@", THIS_FILE, THIS_METHOD, error.userInfo);
+    } else {
+        DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
+    }
+    NSArray *services = peripheral.services;
+    [services enumerateObjectsUsingBlock:^(CBService *service, NSUInteger idx, BOOL *stop) {
+        DDLogInfo(@"Discovered service: %@", service);
+        [peripheral discoverCharacteristics:nil forService:service];
+    }];
+}
+
+- (void)peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error {
+    if (error) {
+        DDLogError(@"%@: %@ %@", THIS_FILE, THIS_METHOD, error.description);
+    } else {
+        DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
+    }
+}
+
+- (void)peripheral:(CBPeripheral *)peripheral didWriteValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error {
+    if (error) {
+        DDLogError(@"%@: %@ %@", THIS_FILE, THIS_METHOD, error.userInfo);
+    } else {
+        DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
+    }
+}
+
+- (void)peripheral:(CBPeripheral *)peripheral didDiscoverCharacteristicsForService:(CBService *)service error:(NSError *)error {
+    if (error) {
+        DDLogError(@"%@: %@ %@", THIS_FILE, THIS_METHOD, error.userInfo);
+    } else {
+        DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
+        [service.characteristics enumerateObjectsUsingBlock:^(CBCharacteristic *characteristic, NSUInteger idx, BOOL *stop) {
+            DDLogInfo(@"Discovered characteristic: %@", characteristic);
+            [peripheral readValueForCharacteristic:characteristic];
+        }];
+    }
+    
+
+}
+
 
 @end

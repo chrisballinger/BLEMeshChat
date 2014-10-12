@@ -17,7 +17,7 @@
 - (instancetype) init {
     if (self = [super init]) {
         self.title = NSLocalizedString(@"Broadcast", nil);
-        [self setupBroadcaster];
+        //[self setupBroadcaster];
     }
     return self;
 }
