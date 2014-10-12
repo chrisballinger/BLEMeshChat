@@ -9,9 +9,10 @@
 #import "BLEScannerViewController.h"
 #import "BLEScanner.h"
 #import "BLEDatabaseManager.h"
-#import "BLEDevice.h"
+#import "BLEPeripheralDevice.h"
+#import "BLEPeripheralDeviceTableViewCell.h"
 
-static NSString * const kBLEDeviceCellIdentifier = @"kBLEDeviceCellIdentifier";
+static NSString * const kBLEPeripheralDeviceCellIdentifier = @"kBLEPeripheralDeviceCellIdentifier";
 
 @interface BLEScannerViewController ()
 @property (nonatomic) BOOL hasUpdatedConstraints;
@@ -48,7 +49,8 @@ static NSString * const kBLEDeviceCellIdentifier = @"kBLEDeviceCellIdentifier";
     self.deviceTableView.translatesAutoresizingMaskIntoConstraints = NO;
     self.deviceTableView.delegate = self;
     self.deviceTableView.dataSource = self;
-    [self.deviceTableView registerClass:[UITableViewCell class] forCellReuseIdentifier:kBLEDeviceCellIdentifier];
+    self.deviceTableView.rowHeight = 50.0f;
+    [self.deviceTableView registerClass:[BLEPeripheralDeviceTableViewCell class] forCellReuseIdentifier:kBLEPeripheralDeviceCellIdentifier];
     [self.view addSubview:self.deviceTableView];
 }
 
@@ -84,17 +86,12 @@ static NSString * const kBLEDeviceCellIdentifier = @"kBLEDeviceCellIdentifier";
 }
 
 - (UITableViewCell*) tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:kBLEDeviceCellIdentifier forIndexPath:indexPath];
-    __block BLEDevice *device = nil;
+    BLEPeripheralDeviceTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:kBLEPeripheralDeviceCellIdentifier forIndexPath:indexPath];
+    __block BLEPeripheralDevice *device = nil;
     [self.readConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
         device = [[transaction extension:self.allDevicesViewName] objectAtIndexPath:indexPath withMappings:self.mappings];
     }];
-    if (device.name) {
-        cell.textLabel.text = device.name;
-    } else {
-        cell.textLabel.text = device.uniqueIdentifier;
-    }
-    
+    [cell setDevice:device];
     return cell;
 }
 

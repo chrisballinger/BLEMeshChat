@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		5AFAD98C8D32B5D6E0EF9FA3 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D875EBA6B1062FD39A2B28A /* libPods.a */; };
 		D92B37E519EA8AE40047AB38 /* UIViewController+BLE.m in Sources */ = {isa = PBXBuildFile; fileRef = D92B37E419EA8AE40047AB38 /* UIViewController+BLE.m */; };
+		D92B37E819EA918C0047AB38 /* BLEPeripheralDeviceTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D92B37E719EA918C0047AB38 /* BLEPeripheralDeviceTableViewCell.m */; };
+		D92B37EB19EA92920047AB38 /* BLEYapObject.m in Sources */ = {isa = PBXBuildFile; fileRef = D92B37EA19EA92920047AB38 /* BLEYapObject.m */; };
 		D9BE2D2E19EA0B2600A7A82F /* BLEScannerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D9BE2D2D19EA0B2600A7A82F /* BLEScannerViewController.m */; };
 		D9BE2D3219EA0C3A00A7A82F /* BLEDatabaseManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D9BE2D3119EA0C3A00A7A82F /* BLEDatabaseManager.m */; };
 		D9C425E419E89D9D004F7335 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = D9C425E319E89D9D004F7335 /* main.m */; };
@@ -17,7 +19,7 @@
 		D9C425EF19E89D9D004F7335 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D9C425EE19E89D9D004F7335 /* Images.xcassets */; };
 		D9C425F219E89D9D004F7335 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = D9C425F019E89D9D004F7335 /* LaunchScreen.xib */; };
 		D9C425FE19E89D9D004F7335 /* BLEMeshChatTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D9C425FD19E89D9D004F7335 /* BLEMeshChatTests.m */; };
-		D9C4260A19E8A4D5004F7335 /* BLEDevice.m in Sources */ = {isa = PBXBuildFile; fileRef = D9C4260919E8A4D5004F7335 /* BLEDevice.m */; };
+		D9C4260A19E8A4D5004F7335 /* BLEPeripheralDevice.m in Sources */ = {isa = PBXBuildFile; fileRef = D9C4260919E8A4D5004F7335 /* BLEPeripheralDevice.m */; };
 		D9C4260E19E8A513004F7335 /* BLEScanner.m in Sources */ = {isa = PBXBuildFile; fileRef = D9C4260D19E8A513004F7335 /* BLEScanner.m */; };
 		D9C4261119E8A52B004F7335 /* BLEBroadcaster.m in Sources */ = {isa = PBXBuildFile; fileRef = D9C4261019E8A52B004F7335 /* BLEBroadcaster.m */; };
 		D9C4261319E8A617004F7335 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9C4261219E8A617004F7335 /* CoreBluetooth.framework */; };
@@ -38,6 +40,10 @@
 		6D875EBA6B1062FD39A2B28A /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D92B37E319EA8AE40047AB38 /* UIViewController+BLE.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIViewController+BLE.h"; sourceTree = "<group>"; };
 		D92B37E419EA8AE40047AB38 /* UIViewController+BLE.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIViewController+BLE.m"; sourceTree = "<group>"; };
+		D92B37E619EA918C0047AB38 /* BLEPeripheralDeviceTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLEPeripheralDeviceTableViewCell.h; sourceTree = "<group>"; };
+		D92B37E719EA918C0047AB38 /* BLEPeripheralDeviceTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLEPeripheralDeviceTableViewCell.m; sourceTree = "<group>"; };
+		D92B37E919EA92920047AB38 /* BLEYapObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLEYapObject.h; sourceTree = "<group>"; };
+		D92B37EA19EA92920047AB38 /* BLEYapObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLEYapObject.m; sourceTree = "<group>"; };
 		D9BE2D2C19EA0B2600A7A82F /* BLEScannerViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLEScannerViewController.h; sourceTree = "<group>"; };
 		D9BE2D2D19EA0B2600A7A82F /* BLEScannerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLEScannerViewController.m; sourceTree = "<group>"; };
 		D9BE2D3019EA0C3A00A7A82F /* BLEDatabaseManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLEDatabaseManager.h; sourceTree = "<group>"; };
@@ -54,8 +60,8 @@
 		D9C425F719E89D9D004F7335 /* BLEMeshChatTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BLEMeshChatTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D9C425FC19E89D9D004F7335 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D9C425FD19E89D9D004F7335 /* BLEMeshChatTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BLEMeshChatTests.m; sourceTree = "<group>"; };
-		D9C4260819E8A4D5004F7335 /* BLEDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLEDevice.h; sourceTree = "<group>"; };
-		D9C4260919E8A4D5004F7335 /* BLEDevice.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLEDevice.m; sourceTree = "<group>"; };
+		D9C4260819E8A4D5004F7335 /* BLEPeripheralDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLEPeripheralDevice.h; sourceTree = "<group>"; };
+		D9C4260919E8A4D5004F7335 /* BLEPeripheralDevice.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLEPeripheralDevice.m; sourceTree = "<group>"; };
 		D9C4260C19E8A513004F7335 /* BLEScanner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLEScanner.h; sourceTree = "<group>"; };
 		D9C4260D19E8A513004F7335 /* BLEScanner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLEScanner.m; sourceTree = "<group>"; };
 		D9C4260F19E8A52B004F7335 /* BLEBroadcaster.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLEBroadcaster.h; sourceTree = "<group>"; };
@@ -107,6 +113,8 @@
 		D9BE2D2F19EA0B3400A7A82F /* Scanning */ = {
 			isa = PBXGroup;
 			children = (
+				D92B37E619EA918C0047AB38 /* BLEPeripheralDeviceTableViewCell.h */,
+				D92B37E719EA918C0047AB38 /* BLEPeripheralDeviceTableViewCell.m */,
 				D9BE2D2C19EA0B2600A7A82F /* BLEScannerViewController.h */,
 				D9BE2D2D19EA0B2600A7A82F /* BLEScannerViewController.m */,
 				D9C4260C19E8A513004F7335 /* BLEScanner.h */,
@@ -195,8 +203,10 @@
 			children = (
 				D9BE2D3019EA0C3A00A7A82F /* BLEDatabaseManager.h */,
 				D9BE2D3119EA0C3A00A7A82F /* BLEDatabaseManager.m */,
-				D9C4260819E8A4D5004F7335 /* BLEDevice.h */,
-				D9C4260919E8A4D5004F7335 /* BLEDevice.m */,
+				D92B37E919EA92920047AB38 /* BLEYapObject.h */,
+				D92B37EA19EA92920047AB38 /* BLEYapObject.m */,
+				D9C4260819E8A4D5004F7335 /* BLEPeripheralDevice.h */,
+				D9C4260919E8A4D5004F7335 /* BLEPeripheralDevice.m */,
 			);
 			name = Data;
 			sourceTree = "<group>";
@@ -354,12 +364,14 @@
 				D9C4261119E8A52B004F7335 /* BLEBroadcaster.m in Sources */,
 				D9BE2D2E19EA0B2600A7A82F /* BLEScannerViewController.m in Sources */,
 				D9C425EA19E89D9D004F7335 /* BLEBroadcastViewController.m in Sources */,
+				D92B37E819EA918C0047AB38 /* BLEPeripheralDeviceTableViewCell.m in Sources */,
 				D9C4260E19E8A513004F7335 /* BLEScanner.m in Sources */,
-				D9C4260A19E8A4D5004F7335 /* BLEDevice.m in Sources */,
+				D9C4260A19E8A4D5004F7335 /* BLEPeripheralDevice.m in Sources */,
 				D92B37E519EA8AE40047AB38 /* UIViewController+BLE.m in Sources */,
 				D9C425E719E89D9D004F7335 /* BLEAppDelegate.m in Sources */,
 				D9BE2D3219EA0C3A00A7A82F /* BLEDatabaseManager.m in Sources */,
 				D9C425E419E89D9D004F7335 /* main.m in Sources */,
+				D92B37EB19EA92920047AB38 /* BLEYapObject.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

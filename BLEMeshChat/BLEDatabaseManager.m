@@ -9,7 +9,7 @@
 #import "BLEDatabaseManager.h"
 #import "YapDatabaseView.h"
 #import "YapDatabaseViewTypes.h"
-#import "BLEDevice.h"
+#import "BLEPeripheralDevice.h"
 
 @implementation BLEDatabaseManager
 
@@ -39,8 +39,8 @@
         return _allDevicesViewName;
     }];
     YapDatabaseViewSorting *sorting = [YapDatabaseViewSorting withObjectBlock:^NSComparisonResult(NSString *group, NSString *collection1, NSString *key1, id object1, NSString *collection2, NSString *key2, id object2) {
-        BLEDevice *device1 = object1;
-        BLEDevice *device2 = object2;
+        BLEPeripheralDevice *device1 = object1;
+        BLEPeripheralDevice *device2 = object2;
         return [device1.lastSeenDate compare:device2.lastSeenDate];
     }];
     YapDatabaseView *databaseView = [[YapDatabaseView alloc] initWithGrouping:grouping sorting:sorting versionTag:@"1" options:nil];

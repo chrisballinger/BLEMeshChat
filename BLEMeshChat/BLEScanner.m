@@ -8,7 +8,7 @@
 
 #import "BLEScanner.h"
 #import "BLEDatabaseManager.h"
-#import "BLEDevice.h"
+#import "BLEPeripheralDevice.h"
 
 static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdentifier";
 
@@ -62,9 +62,9 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
     DDLogVerbose(@"didDiscoverPeripheral: %@\tadvertisementData: %@\tRSSI:%@", peripheral, advertisementData, RSSI);
     NSString *key = peripheral.identifier.UUIDString;
     [self.readConnection asyncReadWithBlock:^(YapDatabaseReadTransaction *transaction) {
-        BLEDevice *device = [transaction objectForKey:key inCollection:[BLEDevice collection]];
+        BLEPeripheralDevice *device = [transaction objectForKey:key inCollection:[BLEPeripheralDevice collection]];
         if (!device) {
-            device = [[BLEDevice alloc] init];
+            device = [[BLEPeripheralDevice alloc] init];
         } else {
             device = [device copy];
         }
@@ -72,8 +72,9 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
         device.lastSeenRSSI = RSSI;
         device.lastSeenAdvertisements = advertisementData;
         device.lastSeenDate = [NSDate date];
+        device.numberOfTimesSeen++;
         [[BLEDatabaseManager sharedInstance].readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
-            [transaction setObject:device forKey:device.uniqueIdentifier inCollection:[BLEDevice collection]];
+            [transaction setObject:device forKey:device.uniqueIdentifier inCollection:[BLEPeripheralDevice collection]];
         }];
     }];
 }
