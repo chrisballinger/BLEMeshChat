@@ -34,9 +34,11 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
 
 - (BOOL) startScanning {
     if (self.centralManager.state == CBCentralManagerStatePoweredOn) {
-        BOOL allowDuplicates = NO;
-        [self.centralManager scanForPeripheralsWithServices:@[[BLEBroadcaster meshChatServiceUUID]]
+        BOOL allowDuplicates = YES;
+        NSArray *services = @[[BLEBroadcaster meshChatServiceUUID]];
+        [self.centralManager scanForPeripheralsWithServices:services
                                                     options:@{CBCentralManagerScanOptionAllowDuplicatesKey: @(allowDuplicates)}];
+        DDLogInfo(@"Scanning for %@", services);
         return YES;
     } else {
         DDLogWarn(@"Central Manager not powered on!");
@@ -48,9 +50,9 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
     [self.centralManager stopScan];
 }
 
-- (void) updateDeviceFromPeripheral:(CBPeripheral*)peripheral {
+- (void) updateDeviceFromPeripheral:(CBPeripheral*)peripheral RSSI:(NSNumber*)RSSI {
     NSString *key = peripheral.identifier.UUIDString;
-    [self.readConnection asyncReadWithBlock:^(YapDatabaseReadTransaction *transaction) {
+    [[BLEDatabaseManager sharedInstance].readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         BLEPeripheralDevice *device = [transaction objectForKey:key inCollection:[BLEPeripheralDevice collection]];
         if (!device) {
             device = [[BLEPeripheralDevice alloc] init];
@@ -58,12 +60,12 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
             device = [device copy];
         }
         [device setPeripheral:peripheral];
-        device.lastSeenRSSI = peripheral.RSSI;
+        if (RSSI) {
+            device.lastSeenRSSI = RSSI;
+        }
         device.lastSeenDate = [NSDate date];
         device.numberOfTimesSeen = device.numberOfTimesSeen + 1;
-        [[BLEDatabaseManager sharedInstance].readWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
-            [transaction setObject:device forKey:device.uniqueIdentifier inCollection:[BLEPeripheralDevice collection]];
-        }];
+        [transaction setObject:device forKey:key inCollection:[BLEPeripheralDevice collection]];
     }];
 }
 
@@ -84,10 +86,10 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
     }
     [peripherals enumerateObjectsUsingBlock:^(CBPeripheral *peripheral, NSUInteger idx, BOOL *stop) {
         peripheral.delegate = self;
-        if (peripheral.state != CBPeripheralStateConnected) {
+        if (peripheral.state == CBPeripheralStateDisconnected) {
             [central connectPeripheral:peripheral options:nil];
         }
-        [self updateDeviceFromPeripheral:peripheral];
+        [self updateDeviceFromPeripheral:peripheral RSSI:nil];
     }];
 }
 
@@ -102,7 +104,7 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
 - (void)centralManager:(CBCentralManager *)central didConnectPeripheral:(CBPeripheral *)peripheral {
     DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
     [peripheral discoverServices:@[[BLEBroadcaster meshChatServiceUUID]]];
-    [self updateDeviceFromPeripheral:peripheral];
+    [self updateDeviceFromPeripheral:peripheral RSSI:nil];
 }
 
 - (void)centralManager:(CBCentralManager *)central didFailToConnectPeripheral:(CBPeripheral *)peripheral error:(NSError *)error {
@@ -111,8 +113,8 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
     } else {
         DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
     }
-    [self updateDeviceFromPeripheral:peripheral];
-    if (peripheral.state != CBPeripheralStateConnected) {
+    [self updateDeviceFromPeripheral:peripheral RSSI:nil];
+    if (peripheral.state == CBPeripheralStateDisconnected) {
         [central connectPeripheral:peripheral options:nil];
     }
 }
@@ -123,8 +125,8 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
     } else {
         DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
     }
-    [self updateDeviceFromPeripheral:peripheral];
-    if (peripheral.state != CBPeripheralStateConnected) {
+    [self updateDeviceFromPeripheral:peripheral RSSI:nil];
+    if (peripheral.state == CBPeripheralStateDisconnected) {
         [central connectPeripheral:peripheral options:nil];
     }
 }
@@ -132,10 +134,10 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
 - (void)centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary *)advertisementData RSSI:(NSNumber *)RSSI {
     DDLogVerbose(@"didDiscoverPeripheral: %@\tadvertisementData: %@\tRSSI:%@", peripheral, advertisementData, RSSI);
     peripheral.delegate = self;
-    if (peripheral.state != CBPeripheralStateConnected) {
+    if (peripheral.state == CBPeripheralStateDisconnected) {
         [central connectPeripheral:peripheral options:nil];
     }
-    [self updateDeviceFromPeripheral:peripheral];
+    [self updateDeviceFromPeripheral:peripheral RSSI:RSSI];
 }
 
 #pragma mark CBPeripheralDelegate methods
@@ -149,10 +151,11 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
     NSArray *services = peripheral.services;
     [services enumerateObjectsUsingBlock:^(CBService *service, NSUInteger idx, BOOL *stop) {
         DDLogInfo(@"Discovered service: %@", service);
-        [peripheral discoverCharacteristics:@[[BLEBroadcaster meshChatIdentityCharacteristicUUID], [BLEBroadcaster meshChatReadCharacteristicUUID]]
+        [peripheral discoverCharacteristics:@[[BLEBroadcaster identityReadCharacteristicUUID], [BLEBroadcaster messagesReadCharacteristicUUID],
+                                              [BLEBroadcaster identityWriteCharacteristicUUID], [BLEBroadcaster messagesWriteCharacteristicUUID]]
                                  forService:service];
     }];
-    [self updateDeviceFromPeripheral:peripheral];
+    [self updateDeviceFromPeripheral:peripheral RSSI:nil];
 }
 
 - (void)peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error {
@@ -161,7 +164,7 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
     } else {
         DDLogVerbose(@"%@: %@ %@", THIS_FILE, THIS_METHOD, characteristic);
     }
-    [self updateDeviceFromPeripheral:peripheral];
+    [self updateDeviceFromPeripheral:peripheral RSSI:nil];
 }
 
 - (void)peripheral:(CBPeripheral *)peripheral didWriteValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error {
@@ -170,7 +173,7 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
     } else {
         DDLogVerbose(@"%@: %@ %@", THIS_FILE, THIS_METHOD, characteristic);
     }
-    [self updateDeviceFromPeripheral:peripheral];
+    [self updateDeviceFromPeripheral:peripheral RSSI:nil];
 }
 
 - (void)peripheral:(CBPeripheral *)peripheral didDiscoverCharacteristicsForService:(CBService *)service error:(NSError *)error {
@@ -180,10 +183,19 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
         DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
         [service.characteristics enumerateObjectsUsingBlock:^(CBCharacteristic *characteristic, NSUInteger idx, BOOL *stop) {
             DDLogInfo(@"Discovered characteristic: %@", characteristic);
-            [peripheral readValueForCharacteristic:characteristic];
+            CBUUID *uuid = characteristic.UUID;
+            if ([uuid isEqual:[BLEBroadcaster messagesReadCharacteristicUUID]]) {
+                [peripheral readValueForCharacteristic:characteristic];
+            } else if ([uuid isEqual:[BLEBroadcaster identityReadCharacteristicUUID]]) {
+                [peripheral readValueForCharacteristic:characteristic];
+            } else if ([uuid isEqual:[BLEBroadcaster messagesWriteCharacteristicUUID]]) {
+                [peripheral writeValue:[@"msg" dataUsingEncoding:NSUTF8StringEncoding] forCharacteristic:characteristic type:CBCharacteristicWriteWithResponse];
+            } else if ([uuid isEqual:[BLEBroadcaster identityWriteCharacteristicUUID]]) {
+                [peripheral writeValue:[@"ident" dataUsingEncoding:NSUTF8StringEncoding] forCharacteristic:characteristic type:CBCharacteristicWriteWithResponse];
+            }
         }];
     }
-    [self updateDeviceFromPeripheral:peripheral];
+    [self updateDeviceFromPeripheral:peripheral RSSI:nil];
 }
 
 

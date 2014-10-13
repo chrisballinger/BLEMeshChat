@@ -112,7 +112,7 @@ static NSString * const kBLEPeripheralDeviceCellIdentifier = @"kBLEPeripheralDev
     self.readConnection = [[BLEDatabaseManager sharedInstance].database newConnection];
     self.allDevicesViewName = [BLEDatabaseManager sharedInstance].allDevicesViewName;
     self.mappings = [[YapDatabaseViewMappings alloc] initWithGroupFilterBlock:^BOOL(NSString *group, YapDatabaseReadTransaction *transaction) {
-        if ([group isEqualToString:@"active"]) {
+        if ([group isEqualToString:[BLEPeripheralDevice activeGroupName]]) {
             return YES;
         }
         return NO;

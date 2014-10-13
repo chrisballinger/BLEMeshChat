@@ -21,4 +21,11 @@
 /** Sets uuid, deviceName, state from peripheral */
 - (void) setPeripheral:(CBPeripheral*)peripheral;
 
+
+
+/** Group current devices as "active" */
++ (NSString*) activeGroupName;
+/** Group old devices as "past" */
++ (NSString*) pastGroupName;
+
 @end

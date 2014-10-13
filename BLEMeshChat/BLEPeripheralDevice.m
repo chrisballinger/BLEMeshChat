@@ -19,4 +19,13 @@
     _name = peripheral.name;
 }
 
+/** Group current devices as "active" */
++ (NSString*) activeGroupName {
+    return @"active";
+}
+/** Group old devices as "past" */
++ (NSString*) pastGroupName {
+    return @"past";
+}
+
 @end

@@ -39,9 +39,9 @@
         NSTimeInterval oldnessThreshold = 60; // devices older than 60 sec are considered old
         NSTimeInterval timeIntervalSinceNow = [device.lastSeenDate timeIntervalSinceNow];
         if (timeIntervalSinceNow < -oldnessThreshold) {
-            return @"past";
+            return [BLEPeripheralDevice pastGroupName];
         } else {
-            return @"active";
+            return [BLEPeripheralDevice activeGroupName];
         }
     }];
     YapDatabaseViewSorting *sorting = [YapDatabaseViewSorting withObjectBlock:^NSComparisonResult(NSString *group, NSString *collection1, NSString *key1, BLEPeripheralDevice *device1, NSString *collection2, NSString *key2, BLEPeripheralDevice *device2) {
