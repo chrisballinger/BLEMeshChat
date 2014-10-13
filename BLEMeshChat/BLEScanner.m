@@ -114,9 +114,6 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
         DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
     }
     [self updateDeviceFromPeripheral:peripheral RSSI:nil];
-    if (peripheral.state == CBPeripheralStateDisconnected) {
-        [central connectPeripheral:peripheral options:nil];
-    }
 }
 
 - (void)centralManager:(CBCentralManager *)central didDisconnectPeripheral:(CBPeripheral *)peripheral error:(NSError *)error {
@@ -126,9 +123,6 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
         DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
     }
     [self updateDeviceFromPeripheral:peripheral RSSI:nil];
-    if (peripheral.state == CBPeripheralStateDisconnected) {
-        [central connectPeripheral:peripheral options:nil];
-    }
 }
 
 - (void)centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary *)advertisementData RSSI:(NSNumber *)RSSI {

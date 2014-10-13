@@ -190,6 +190,20 @@ static NSString * const kBLEMessagesWriteCharacteristicUUIDString = @"6EAEC220-5
 
 - (void)peripheralManager:(CBPeripheralManager *)peripheral didReceiveWriteRequests:(NSArray *)requests {
     DDLogVerbose(@"%@: %@ %@", THIS_FILE, THIS_METHOD, requests);
+    [requests enumerateObjectsUsingBlock:^(CBATTRequest *request, NSUInteger idx, BOOL *stop) {
+        CBUUID *uuid = request.characteristic.UUID;
+        CBATTError result;
+        if ([uuid isEqual:self.messagesWriteCharacteristic.UUID]) {
+            result = CBATTErrorSuccess;
+            DDLogInfo(@"incoming message: %@", request.value);
+        } else if ([uuid isEqual:self.identityWriteCharacteristic.UUID]) {
+            result = CBATTErrorSuccess;
+            DDLogInfo(@"incoming identity: %@", request.value);
+        } else {
+            result = CBATTErrorWriteNotPermitted;
+        }
+        [peripheral respondToRequest:request withResult:result];
+    }];
 }
 
 - (void)peripheralManagerIsReadyToUpdateSubscribers:(CBPeripheralManager *)peripheral {
