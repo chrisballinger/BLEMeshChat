@@ -18,6 +18,8 @@
     if (self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]) {
         [self setupDisplayNameLabel];
         [self setupSignalStrengthLabel];
+        [self setupLastSeenDateLabel];
+        [self setupConnectionStateLabel];
         [self updateConstraintsIfNeeded];
     }
     return self;
@@ -35,12 +37,35 @@
     [self.contentView addSubview:self.displayNameLabel];
 }
 
+- (void) setupLastSeenDateLabel {
+    _lastSeenDateLabel = [[UILabel alloc] init];
+    self.lastSeenDateLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.contentView addSubview:self.lastSeenDateLabel];
+}
+
+- (void) setupConnectionStateLabel {
+    _connectionStateLabel = [[UILabel alloc] init];
+    self.connectionStateLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.contentView addSubview:self.connectionStateLabel];
+}
+
 - (void) updateConstraints {
     if (!self.hasAddedConstraints) {
-        [self.displayNameLabel autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsMake(5, 5, 5, 5) excludingEdge:ALEdgeRight];
+        [self.displayNameLabel autoPinEdgeToSuperviewEdge:ALEdgeTop withInset:5];
+        [self.displayNameLabel autoPinEdgeToSuperviewEdge:ALEdgeLeft withInset:5];
+        [self.displayNameLabel autoPinEdge:ALEdgeBottom toEdge:ALEdgeTop ofView:self.lastSeenDateLabel];
         [self.displayNameLabel autoPinEdge:ALEdgeRight toEdge:ALEdgeLeft ofView:self.signalStrengthLabel];
-        [self.signalStrengthLabel autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsMake(5, 5, 5, 5) excludingEdge:ALEdgeLeft];
-        [self.signalStrengthLabel autoSetDimension:ALDimensionWidth toSize:40.0f];
+        [self.signalStrengthLabel autoPinEdgeToSuperviewEdge:ALEdgeTop withInset:5];
+        [self.signalStrengthLabel autoPinEdgeToSuperviewEdge:ALEdgeRight withInset:5];
+        [self.signalStrengthLabel autoPinEdge:ALEdgeBottom toEdge:ALEdgeTop ofView:self.connectionStateLabel];
+        [self.signalStrengthLabel autoPinEdge:ALEdgeLeft toEdge:ALEdgeRight ofView:self.displayNameLabel];
+        [self.lastSeenDateLabel autoPinEdgeToSuperviewEdge:ALEdgeBottom withInset:5];
+        [self.lastSeenDateLabel autoPinEdgeToSuperviewEdge:ALEdgeLeft withInset:5];
+        [self.connectionStateLabel autoPinEdgeToSuperviewEdge:ALEdgeBottom withInset:5];
+        [self.connectionStateLabel autoPinEdgeToSuperviewEdge:ALEdgeRight withInset:5];
+        [self.displayNameLabel autoMatchDimension:ALDimensionHeight toDimension:ALDimensionHeight ofView:self.lastSeenDateLabel];
+        [self.signalStrengthLabel autoMatchDimension:ALDimensionHeight toDimension:ALDimensionHeight ofView:self.connectionStateLabel];
+        [self.signalStrengthLabel autoSetDimension:ALDimensionWidth toSize:30];
         self.hasAddedConstraints = YES;
     }
     [super updateConstraints];
@@ -53,12 +78,16 @@
 }
 
 - (void) setDevice:(BLEPeripheralDevice*)device {
+    NSString *name = nil;
     if (device.name) {
-        self.displayNameLabel.text = device.name;
+        name = [device.name stringByAppendingFormat:@" %@", device.uniqueIdentifier];
     } else {
-        self.displayNameLabel.text = device.uniqueIdentifier;
+        name = device.uniqueIdentifier;
     }
+    self.displayNameLabel.text = name;
     self.signalStrengthLabel.text = device.lastSeenRSSI.stringValue;
+    self.lastSeenDateLabel.text = device.lastSeenDate.description;
+    self.connectionStateLabel.text = [NSString stringWithFormat:@"%d", (int)device.numberOfTimesSeen];
 }
 
 @end

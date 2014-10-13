@@ -49,7 +49,7 @@ static NSString * const kBLEPeripheralDeviceCellIdentifier = @"kBLEPeripheralDev
     self.deviceTableView.translatesAutoresizingMaskIntoConstraints = NO;
     self.deviceTableView.delegate = self;
     self.deviceTableView.dataSource = self;
-    self.deviceTableView.rowHeight = 50.0f;
+    self.deviceTableView.rowHeight = 80.0f;
     [self.deviceTableView registerClass:[BLEPeripheralDeviceTableViewCell class] forCellReuseIdentifier:kBLEPeripheralDeviceCellIdentifier];
     [self.view addSubview:self.deviceTableView];
 }
@@ -78,11 +78,22 @@ static NSString * const kBLEPeripheralDeviceCellIdentifier = @"kBLEPeripheralDev
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)sender
 {
-    return [self.mappings numberOfSections];
+    NSInteger numberOfSections = [self.mappings numberOfSections];
+    return numberOfSections;
 }
 
 - (NSInteger) tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return [self.mappings numberOfItemsInSection:section];
+    NSInteger numberOfRows = [self.mappings numberOfItemsInSection:section];
+    return numberOfRows;
+}
+
+- (NSString*) tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
+    if (section == 0) {
+        return @"Active";
+    } else if (section == 1) {
+        return @"History";
+    }
+    return @"";
 }
 
 - (UITableViewCell*) tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -101,7 +112,10 @@ static NSString * const kBLEPeripheralDeviceCellIdentifier = @"kBLEPeripheralDev
     self.readConnection = [[BLEDatabaseManager sharedInstance].database newConnection];
     self.allDevicesViewName = [BLEDatabaseManager sharedInstance].allDevicesViewName;
     self.mappings = [[YapDatabaseViewMappings alloc] initWithGroupFilterBlock:^BOOL(NSString *group, YapDatabaseReadTransaction *transaction) {
-        return YES;
+        if ([group isEqualToString:@"active"]) {
+            return YES;
+        }
+        return NO;
     } sortBlock:^NSComparisonResult(NSString *group1, NSString *group2, YapDatabaseReadTransaction *transaction) {
         return [group1 compare:group2];
     } view:self.allDevicesViewName];

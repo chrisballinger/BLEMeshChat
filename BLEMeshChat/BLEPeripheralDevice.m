@@ -19,8 +19,4 @@
     _name = peripheral.name;
 }
 
-- (void) setAdvertisementDictionary:(NSDictionary*)dictionary {
-    
-}
-
 @end

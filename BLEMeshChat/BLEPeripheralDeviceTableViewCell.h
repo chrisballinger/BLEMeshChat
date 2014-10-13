@@ -13,6 +13,8 @@
 
 @property (nonatomic, strong, readonly) UILabel *displayNameLabel;
 @property (nonatomic, strong, readonly) UILabel *signalStrengthLabel;
+@property (nonatomic, strong, readonly) UILabel *lastSeenDateLabel;
+@property (nonatomic, strong, readonly) UILabel *connectionStateLabel;
 
 - (void) setDevice:(BLEPeripheralDevice*)device;
 

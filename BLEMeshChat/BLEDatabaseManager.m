@@ -35,15 +35,19 @@
 
 - (void) registerAllDevicesView {
     _allDevicesViewName = @"BLEAllDevicesView";
-    YapDatabaseViewGrouping *grouping = [YapDatabaseViewGrouping withKeyBlock:^NSString *(NSString *collection, NSString *key) {
-        return _allDevicesViewName;
+    YapDatabaseViewGrouping *grouping = [YapDatabaseViewGrouping withObjectBlock:^NSString *(NSString *collection, NSString *key, BLEPeripheralDevice *device) {
+        NSTimeInterval oldnessThreshold = 60; // devices older than 60 sec are considered old
+        NSTimeInterval timeIntervalSinceNow = [device.lastSeenDate timeIntervalSinceNow];
+        if (timeIntervalSinceNow < -oldnessThreshold) {
+            return @"past";
+        } else {
+            return @"active";
+        }
     }];
-    YapDatabaseViewSorting *sorting = [YapDatabaseViewSorting withObjectBlock:^NSComparisonResult(NSString *group, NSString *collection1, NSString *key1, id object1, NSString *collection2, NSString *key2, id object2) {
-        BLEPeripheralDevice *device1 = object1;
-        BLEPeripheralDevice *device2 = object2;
-        return [device2.lastSeenRSSI compare:device1.lastSeenRSSI];
+    YapDatabaseViewSorting *sorting = [YapDatabaseViewSorting withObjectBlock:^NSComparisonResult(NSString *group, NSString *collection1, NSString *key1, BLEPeripheralDevice *device1, NSString *collection2, NSString *key2, BLEPeripheralDevice *device2) {
+        return [device2.lastSeenDate compare:device1.lastSeenDate];
     }];
-    YapDatabaseView *databaseView = [[YapDatabaseView alloc] initWithGrouping:grouping sorting:sorting versionTag:@"4" options:nil];
+    YapDatabaseView *databaseView = [[YapDatabaseView alloc] initWithGrouping:grouping sorting:sorting versionTag:[NSUUID UUID].UUIDString options:nil];
     [self.database asyncRegisterExtension:databaseView withName:self.allDevicesViewName completionBlock:nil];
 }
 

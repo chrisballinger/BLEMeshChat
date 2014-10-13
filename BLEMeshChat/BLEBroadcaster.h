@@ -15,4 +15,8 @@
 - (BOOL) startBroadcasting;
 - (void) stopBroadcasting;
 
++ (CBUUID*) meshChatServiceUUID;
++ (CBUUID*) meshChatReadCharacteristicUUID;
++ (CBUUID*) meshChatIdentityCharacteristicUUID;
+
 @end
