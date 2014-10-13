@@ -17,6 +17,7 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
 @property (nonatomic, strong) CBCentralManager *centralManager;
 @property (nonatomic) dispatch_queue_t eventQueue;
 @property (nonatomic, strong) YapDatabaseConnection *readConnection;
+@property (nonatomic, strong) NSMutableSet *discoveredDevices;
 @end
 
 @implementation BLEScanner
@@ -28,6 +29,7 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
                                                                      queue:_eventQueue
                                                                    options:@{CBCentralManagerOptionRestoreIdentifierKey: kBLEScannerRestoreIdentifier}];
         _readConnection = [[BLEDatabaseManager sharedInstance].database newConnection];
+        _discoveredDevices = [NSMutableSet set];
     }
     return self;
 }
@@ -127,6 +129,7 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
 
 - (void)centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary *)advertisementData RSSI:(NSNumber *)RSSI {
     DDLogVerbose(@"didDiscoverPeripheral: %@\tadvertisementData: %@\tRSSI:%@", peripheral, advertisementData, RSSI);
+    [self.discoveredDevices addObject:peripheral];
     peripheral.delegate = self;
     if (peripheral.state == CBPeripheralStateDisconnected) {
         [central connectPeripheral:peripheral options:nil];

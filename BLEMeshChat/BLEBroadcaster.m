@@ -193,13 +193,21 @@ static NSString * const kBLEMessagesWriteCharacteristicUUIDString = @"6EAEC220-5
     [requests enumerateObjectsUsingBlock:^(CBATTRequest *request, NSUInteger idx, BOOL *stop) {
         CBUUID *uuid = request.characteristic.UUID;
         CBATTError result;
+        NSString *writeString = nil;
+        NSData *writeData = request.value;
+        if (writeData) {
+            uint8_t *writeDataBytes = (uint8_t *)[writeData bytes];
+            NSUInteger writeDataLength = writeData.length;
+            writeString = [[NSString alloc] initWithBytes:writeDataBytes length:writeDataLength encoding:NSUTF8StringEncoding];
+        }
         if ([uuid isEqual:self.messagesWriteCharacteristic.UUID]) {
             result = CBATTErrorSuccess;
-            DDLogInfo(@"incoming message: %@", request.value);
+            DDLogInfo(@"incoming message: %@", writeString);
         } else if ([uuid isEqual:self.identityWriteCharacteristic.UUID]) {
             result = CBATTErrorSuccess;
-            DDLogInfo(@"incoming identity: %@", request.value);
+            DDLogInfo(@"incoming identity: %@", writeString);
         } else {
+            DDLogError(@"unrecognized write: %@", writeString);
             result = CBATTErrorWriteNotPermitted;
         }
         [peripheral respondToRequest:request withResult:result];
