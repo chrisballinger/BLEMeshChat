@@ -22,14 +22,29 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     [DDLog addLogger:[DDTTYLogger sharedInstance]];
     [DDLog addLogger:[DDASLLogger sharedInstance]];
-    id centralLaunch = launchOptions[UIApplicationLaunchOptionsBluetoothCentralsKey];
-    if (centralLaunch) {
+    NSArray *centralManagerIdentifiers = launchOptions[UIApplicationLaunchOptionsBluetoothCentralsKey];
+    if (centralManagerIdentifiers) {
         DDLogInfo(@"didFinishLaunchingWithOptions with UIApplicationLaunchOptionsBluetoothCentralsKey");
     }
-    id peripheralLaunch = launchOptions[UIApplicationLaunchOptionsBluetoothPeripheralsKey];
-    if (peripheralLaunch) {
+    NSArray *peripheralManagerIdentifiers = launchOptions[UIApplicationLaunchOptionsBluetoothPeripheralsKey];
+    if (peripheralManagerIdentifiers) {
         DDLogInfo(@"didFinishLaunchingWithOptions with UIApplicationLaunchOptionsBluetoothPeripheralsKey");
     }
+    if (centralManagerIdentifiers || peripheralManagerIdentifiers) {
+        NSMutableString *body = [NSMutableString stringWithString:@"Launched with "];
+        if (centralManagerIdentifiers) {
+            [body appendString:@"central "];
+        }
+        if (peripheralManagerIdentifiers) {
+            [body appendString:@"peripheral "];
+        }
+        UILocalNotification *localNotification = [[UILocalNotification alloc] init];
+        localNotification.alertBody = body;
+        [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
+    }
+    
+    UIUserNotificationSettings *notificationSettings = [UIUserNotificationSettings settingsForTypes:UIUserNotificationTypeAlert | UIUserNotificationTypeSound categories:nil];
+    [[UIApplication sharedApplication] registerUserNotificationSettings:notificationSettings];
     
     self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
     UITabBarController *tabBarController = [[UITabBarController alloc] init];

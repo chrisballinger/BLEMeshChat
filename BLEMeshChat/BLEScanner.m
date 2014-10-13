@@ -35,7 +35,7 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
 
 - (BOOL) startScanning {
     if (self.centralManager.state == CBCentralManagerStatePoweredOn) {
-        BOOL allowDuplicates = NO;
+        BOOL allowDuplicates = YES;
         [self.centralManager scanForPeripheralsWithServices:nil options:@{CBCentralManagerScanOptionAllowDuplicatesKey: @(allowDuplicates)}];
         return YES;
     } else {
@@ -54,11 +54,16 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
     DDLogVerbose(@"%@: %@ %d", THIS_FILE, THIS_METHOD, (int)central.state);
     if (central.state == CBCentralManagerStatePoweredOn) {
         [self startScanning];
+        
     }
 }
 
-- (void) centralManager:(CBCentralManager *)central willRestoreState:(NSDictionary *)dict {
+- (void) centralManager:(CBCentralManager *)central willRestoreState:(NSDictionary *)state {
     DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
+    NSArray *peripherals = state[CBCentralManagerRestoredStatePeripheralsKey];
+    if (peripherals.count) {
+        DDLogInfo(@"Restored peripherals: %@", peripherals);
+    }
 }
 
 - (void)centralManager:(CBCentralManager *)central didRetrievePeripherals:(NSArray *)peripherals {
@@ -160,8 +165,6 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
             [peripheral readValueForCharacteristic:characteristic];
         }];
     }
-    
-
 }
 
 
