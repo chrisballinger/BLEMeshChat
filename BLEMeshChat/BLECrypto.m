@@ -11,7 +11,7 @@
 
 const NSUInteger kBLECryptoEd25519PublicKeyLength = crypto_sign_ed25519_PUBLICKEYBYTES; // 32 bytes
 const NSUInteger kBLECryptoEd25519PrivateKeyLength = crypto_sign_ed25519_SECRETKEYBYTES; // 64 bytes
-const NSUInteger kBLECryptoEd25519SignatureKeyLength = crypto_sign_ed25519_BYTES; // 64 bytes
+const NSUInteger kBLECryptoEd25519SignatureLength = crypto_sign_ed25519_BYTES; // 64 bytes
 const NSUInteger kBLECryptoCurve25519KeyLength = crypto_scalarmult_curve25519_BYTES; // 32 bytes
 
 @interface BLEKeyPair()
@@ -35,7 +35,11 @@ const NSUInteger kBLECryptoCurve25519KeyLength = crypto_scalarmult_curve25519_BY
 }
 
 
-+ (BLEKeyPair*) generateKeyPair {
++ (BLEKeyPair*) generateKeyPairWithType:(BLEKeyType)type {
+    NSAssert(type == BLEKeyTypeEd25519, @"Only BLEKeyTypeEd25519 is supported right now");
+    if (type != BLEKeyTypeEd25519) {
+        return nil;
+    }
     // Can we use sodium_malloc for privateKeyBytes?
     uint8_t *publicKeyBytes = malloc(sizeof(uint8_t) * kBLECryptoEd25519PublicKeyLength);
     uint8_t *privateKeyBytes = malloc(sizeof(uint8_t) * kBLECryptoEd25519PrivateKeyLength);
@@ -49,41 +53,38 @@ const NSUInteger kBLECryptoCurve25519KeyLength = crypto_scalarmult_curve25519_BY
     return keyPair;
 }
 
-+ (NSData*) signData:(NSData*)data privateKey:(NSData*)privateKey {
++ (NSData*) signatureForData:(NSData*)data privateKey:(NSData*)privateKey {
     NSAssert(data.length != 0, @"Data to be signed should have a length!");
     NSAssert(privateKey.length == kBLECryptoEd25519PrivateKeyLength, @"privateKey should be 64 bytes!");
     if (data.length == 0 || privateKey.length != kBLECryptoEd25519PrivateKeyLength) {
         return nil;
     }
-    size_t dataWithSignatureMaxLength = data.length + sizeof(uint8_t) * kBLECryptoEd25519SignatureKeyLength;
-    uint8_t *dataWithSignatureBytes = malloc(dataWithSignatureMaxLength);
     
-    uint64_t dataWithSignatureActualLength = 0;
-    
-    crypto_sign(dataWithSignatureBytes, &dataWithSignatureActualLength,
-                data.bytes, data.length, privateKey.bytes);
-    
-    NSData *dataWithSignature = [NSData dataWithBytesNoCopy:dataWithSignatureBytes length:dataWithSignatureActualLength freeWhenDone:YES];
-    return dataWithSignature;
+    size_t signatureBytesLength = sizeof(uint8_t) * kBLECryptoEd25519SignatureLength;
+    uint8_t *signatureBytes = malloc(signatureBytesLength);
+    crypto_sign_detached(signatureBytes, NULL, data.bytes, data.length, privateKey.bytes);
+    NSData *signatureData = [NSData dataWithBytesNoCopy:signatureBytes length:signatureBytesLength freeWhenDone:YES];
+    return signatureData;
 }
 
-+ (NSData*) verifyData:(NSData*)dataWithSignature publicKey:(NSData*)publicKey {
-    NSAssert(dataWithSignature.length != 0, @"dataWithSignature should have a length!");
++ (BOOL) verifyData:(NSData*)data signature:(NSData*)signature publicKey:(NSData*)publicKey {
+    NSAssert(data.length != 0, @"data should have a length!");
+    NSAssert(signature.length == kBLECryptoEd25519SignatureLength, @"signature should have be 64 bytes!");
     NSAssert(publicKey.length == kBLECryptoEd25519PublicKeyLength, @"publicKey should be 32 bytes");
-    if (dataWithSignature.length == 0 || publicKey.length != kBLECryptoEd25519PublicKeyLength) {
-        return nil;
+    if (data.length == 0 || signature.length != kBLECryptoEd25519SignatureLength || publicKey.length != kBLECryptoEd25519PublicKeyLength) {
+        return NO;
     }
-    uint8_t *dataBytes = malloc(dataWithSignature.length);
-    uint64_t dataActualLength = 0;
-    if (crypto_sign_open(dataBytes, &dataActualLength,
-                         dataWithSignature.bytes, dataWithSignature.length, publicKey.bytes) == 0) {
-        NSData *data = [NSData dataWithBytesNoCopy:dataBytes length:dataActualLength freeWhenDone:YES];
-        return data;
+    if (crypto_sign_verify_detached(signature.bytes, data.bytes, data.length, publicKey.bytes) == 0) {
+        // Looks good!
+        return YES;
     }
-    return nil;
+    // signature doesn't match!
+    return NO;
 }
 
-- (BLEKeyPair*) convertKeyPair:(BLEKeyPair*)keyPair toType:(BLEKeyType)outputType {
+/*
+
++ (BLEKeyPair*) convertKeyPair:(BLEKeyPair*)keyPair toType:(BLEKeyType)outputType {
     NSAssert(keyPair.type == BLEKeyTypeEd25519, @"Cannot convert Curve25519 to Ed25519");
     NSAssert(outputType == BLEKeyTypeCurve25519, @"Cannot convert Curve25519 to Ed25519");
     if (keyPair.type != BLEKeyTypeEd25519 || outputType != BLEKeyTypeCurve25519) {
@@ -100,7 +101,7 @@ const NSUInteger kBLECryptoCurve25519KeyLength = crypto_scalarmult_curve25519_BY
     return nil;
 }
 
-- (NSData*) convertPrivateKey:(NSData*)privateKey fromType:(BLEKeyType)fromType toType:(BLEKeyType)toType {
++ (NSData*) convertPrivateKey:(NSData*)privateKey fromType:(BLEKeyType)fromType toType:(BLEKeyType)toType {
     NSAssert(privateKey.length == kBLECryptoEd25519PrivateKeyLength, @"privateKey must be 32 bytes!");
     NSAssert(fromType == BLEKeyTypeEd25519 && toType == BLEKeyTypeCurve25519, @"Must be converting from Ed25519 to Curve 25519");
     if (privateKey.length != kBLECryptoEd25519PrivateKeyLength) {
@@ -112,7 +113,7 @@ const NSUInteger kBLECryptoCurve25519KeyLength = crypto_scalarmult_curve25519_BY
     return curve25519PrivateKey;
 }
 
-/*
+
 - (NSData*) convertPublicKey:(NSData*)publicKey fromType:(BLEKeyType)fromType toType:(BLEKeyType)toType {
     NSAssert(privateKey.length == kBLECryptoEd25519PrivateKeyLength, @"privateKey must be 32 bytes!");
     NSAssert(fromType == BLEKeyTypeEd25519 && toType == BLEKeyTypeCurve25519, @"Must be converting from Ed25519 to Curve 25519");

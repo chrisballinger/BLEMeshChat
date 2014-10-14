@@ -22,15 +22,15 @@ typedef NS_ENUM(NSUInteger, BLEKeyType) {
 
 @interface BLECrypto : NSObject
 
-+ (BLEKeyPair*) generateKeyPair;
-+ (NSData*) signData:(NSData*)data privateKey:(NSData*)privateKey;
-+ (NSData*) verifyData:(NSData*)dataWithSignature publicKey:(NSData*)publicKey;
++ (NSData*) signatureForData:(NSData*)data privateKey:(NSData*)privateKey;
++ (BOOL) verifyData:(NSData*)data signature:(NSData*)signature publicKey:(NSData*)publicKey;
 
-- (BLEKeyPair*) convertKeyPair:(BLEKeyPair*)keyPair toType:(BLEKeyType)outputType;
-
-- (NSData*) convertPrivateKey:(NSData*)privateKey fromType:(BLEKeyType)fromType toType:(BLEKeyType)toType;
-- (NSData*) convertPublicKey:(NSData*)publicKey fromType:(BLEKeyType)fromType toType:(BLEKeyType)toType;
-
++ (BLEKeyPair*) generateKeyPairWithType:(BLEKeyType)type;
+/*
++ (BLEKeyPair*) convertKeyPair:(BLEKeyPair*)keyPair toType:(BLEKeyType)outputType;
++ (NSData*) convertPrivateKey:(NSData*)privateKey fromType:(BLEKeyType)fromType toType:(BLEKeyType)toType;
++ (NSData*) convertPublicKey:(NSData*)publicKey fromType:(BLEKeyType)fromType toType:(BLEKeyType)toType;
+*/
 
 + (NSString*) libsodiumVersion;
 
@@ -38,6 +38,6 @@ typedef NS_ENUM(NSUInteger, BLEKeyType) {
 
 extern const NSUInteger kBLECryptoEd25519PublicKeyLength; // 32 bytes
 extern const NSUInteger kBLECryptoEd25519PrivateKeyLength; // 64 bytes
-extern const NSUInteger kBLECryptoEd25519SignatureKeyLength; // 64 bytes
+extern const NSUInteger kBLECryptoEd25519SignatureLength; // 64 bytes
 extern const NSUInteger kBLECryptoCurve25519PublicKeyLength; // 32 bytes
 extern const NSUInteger kBLECryptoCurve25519PrivateKeyLength; // 32 bytes
