@@ -43,8 +43,14 @@
         [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
     }
     
-    UIUserNotificationSettings *notificationSettings = [UIUserNotificationSettings settingsForTypes:UIUserNotificationTypeAlert | UIUserNotificationTypeSound categories:nil];
-    [[UIApplication sharedApplication] registerUserNotificationSettings:notificationSettings];
+    if ([[UIApplication sharedApplication] respondsToSelector:@selector(registerUserNotificationSettings:)]) {
+        UIUserNotificationSettings *notificationSettings = [UIUserNotificationSettings settingsForTypes:UIUserNotificationTypeAlert | UIUserNotificationTypeSound categories:nil];
+        [[UIApplication sharedApplication] registerUserNotificationSettings:notificationSettings];
+    } else {
+        UIRemoteNotificationType myTypes = UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeAlert | UIRemoteNotificationTypeSound;
+        [[UIApplication sharedApplication] registerForRemoteNotificationTypes:myTypes];
+    }
+    
     
     self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
     UITabBarController *tabBarController = [[UITabBarController alloc] init];
