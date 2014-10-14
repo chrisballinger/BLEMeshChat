@@ -1,0 +1,8 @@
+language: objective-c
+
+install:
+  - gem install cocoapods --no-rdoc --no-ri  # We need Cocoapods ~> 0.34
+  - pod install
+
+script:
+  - xctool -workspace BLEMeshChat.xcworkspace -scheme BLEMeshChat -sdk iphonesimulator8.0 -arch i386 build
