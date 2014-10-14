@@ -4,6 +4,10 @@ PODS:
   - CocoaLumberjack/Core (1.9.2)
   - CocoaLumberjack/Extensions (1.9.2):
     - CocoaLumberjack/Core
+  - JSQMessagesViewController (6.0-beta5):
+    - JSQSystemSoundPlayer (~> 2.0.0)
+  - JSQSystemSoundPlayer (2.0.0)
+  - libsodium (1.0.0)
   - Mantle (1.5.1):
     - Mantle/extobjc
   - Mantle/extobjc (1.5.1)
@@ -16,12 +20,21 @@ PODS:
     - YapDatabase/common
 
 DEPENDENCIES:
+  - JSQMessagesViewController (= 6.0-beta5)
+  - libsodium (from `Podspecs/libsodium.podspec.json`)
   - Mantle (~> 1.4)
   - PureLayout (~> 1.1)
   - YapDatabase (~> 2.5)
 
+EXTERNAL SOURCES:
+  libsodium:
+    :podspec: Podspecs/libsodium.podspec.json
+
 SPEC CHECKSUMS:
   CocoaLumberjack: 205769c032b5fef85b92472046bcc8b7e7c8a817
+  JSQMessagesViewController: 69aac1d7a05c41f22f6f562dc95a919936e2c523
+  JSQSystemSoundPlayer: c98443b1cbb3b45db09d0d3d6c2355cf78294981
+  libsodium: ff93a5e950b3f7cad2beb6fedaca768af6ede801
   Mantle: d7c5ac734579ec751c58fecbf56189853056c58c
   PureLayout: c8960fa0f3b40d849d5e177d699d0148faa63b63
   YapDatabase: 096e860167b04e629b88bea33dfb7a4153279bb0
