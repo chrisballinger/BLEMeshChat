@@ -1,7 +1,10 @@
-BLEMeshChat
-===========
+# [BLEMeshChat](https://github.com/chrisballinger/BLEMeshChat) [![Build Status](https://travis-ci.org/chrisballinger/BLEMeshChat.svg?branch=master)](https://travis-ci.org/chrisballinger/BLEMeshChat)
 
 Bluetooth LE Mesh Chat
+
+## Protocol
+
+Prototype draft [Bluetooth LE Mesh Chat Spec](https://github.com/chrisballinger/BLEMeshChat/wiki)
 
 
 ## Attribution
