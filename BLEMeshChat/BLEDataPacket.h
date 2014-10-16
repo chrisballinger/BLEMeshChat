@@ -36,3 +36,10 @@
 - (instancetype) initWithPayloadData:(NSData*)payloadData keyPair:(BLEKeyPair*)keyPair;
 
 @end
+
+extern const NSUInteger kBLEDataPacketCurrentProtocolVersion;
+extern const NSUInteger kBLEDataPacketVersionOffset;
+extern const NSUInteger kBLEDataPacketVersionLength;
+extern const NSUInteger kBLEDataPacketTimestampOffset;
+extern const NSUInteger kBLEDataPacketTimestampLength;
+extern const NSUInteger kBLEDataPacketSenderPublicKeyOffset;

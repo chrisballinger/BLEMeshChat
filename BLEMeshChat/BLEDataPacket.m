@@ -9,12 +9,12 @@
 #import "BLEDataPacket.h"
 #import "BLECrypto.h"
 
-static const NSUInteger kBLECurrentProtocolVersion = 1;
-static const NSUInteger kBLEVersionOffset = 0;
-static const NSUInteger kBLEVersionLength = 1;
-static const NSUInteger kBLETimestampOffset = kBLEVersionOffset + kBLEVersionLength;
-static const NSUInteger kBLETimestampLength = 8;
-static const NSUInteger kBLESenderPublicKeyOffset = kBLETimestampOffset + kBLETimestampLength;
+const NSUInteger kBLEDataPacketCurrentProtocolVersion = 1;
+const NSUInteger kBLEDataPacketVersionOffset = 0;
+const NSUInteger kBLEDataPacketVersionLength = 1;
+const NSUInteger kBLEDataPacketTimestampOffset = kBLEDataPacketVersionOffset + kBLEDataPacketVersionLength;
+const NSUInteger kBLEDataPacketTimestampLength = 8;
+const NSUInteger kBLEDataPacketSenderPublicKeyOffset = kBLEDataPacketTimestampOffset + kBLEDataPacketTimestampLength;
 
 @interface BLEDataPacket()
 @end
@@ -39,17 +39,17 @@ static const NSUInteger kBLESenderPublicKeyOffset = kBLETimestampOffset + kBLETi
 
 //[[version=1][timestamp=8][sender_public_key=32][data=n]][signature=64]
 - (BOOL) parsePacketData:(NSData*)packetData {
-    NSUInteger kBLEMinimumDataPacketSize = kBLEVersionLength + kBLETimestampLength + kBLECryptoEd25519PublicKeyLength + kBLECryptoEd25519SignatureLength;
+    NSUInteger kBLEMinimumDataPacketSize = kBLEDataPacketVersionLength + kBLEDataPacketTimestampLength + kBLECryptoEd25519PublicKeyLength + kBLECryptoEd25519SignatureLength;
     NSAssert(packetData.length > kBLEMinimumDataPacketSize, @"Packet must be of valid length!");
     if (packetData.length <= kBLEMinimumDataPacketSize) {
         return NO;
     }
     _packetData = packetData;
-    _versionData = [packetData subdataWithRange:NSMakeRange(kBLEVersionOffset, kBLEVersionLength)];
-    _timestampData = [packetData subdataWithRange:NSMakeRange(kBLETimestampOffset, kBLETimestampLength)];
-    _senderPublicKey = [packetData subdataWithRange:NSMakeRange(kBLESenderPublicKeyOffset, kBLECryptoEd25519PublicKeyLength)];
+    _versionData = [packetData subdataWithRange:NSMakeRange(kBLEDataPacketVersionOffset, kBLEDataPacketVersionLength)];
+    _timestampData = [packetData subdataWithRange:NSMakeRange(kBLEDataPacketTimestampOffset, kBLEDataPacketTimestampLength)];
+    _senderPublicKey = [packetData subdataWithRange:NSMakeRange(kBLEDataPacketSenderPublicKeyOffset, kBLECryptoEd25519PublicKeyLength)];
     
-    NSUInteger dataOffset = kBLESenderPublicKeyOffset + kBLECryptoEd25519PublicKeyLength;
+    NSUInteger dataOffset = kBLEDataPacketSenderPublicKeyOffset + kBLECryptoEd25519PublicKeyLength;
     NSUInteger signatureOffset = packetData.length - kBLECryptoEd25519SignatureLength - 1;
 
     NSUInteger dataLength = signatureOffset - dataOffset;
@@ -101,12 +101,12 @@ static const NSUInteger kBLESenderPublicKeyOffset = kBLETimestampOffset + kBLETi
 
 - (instancetype) initWithPayloadData:(NSData*)payloadData keyPair:(BLEKeyPair*)keyPair {
     if (self = [super init]) {
-        _versionData = [[self class] versionDataFromVersion:kBLECurrentProtocolVersion];
+        _versionData = [[self class] versionDataFromVersion:kBLEDataPacketCurrentProtocolVersion];
         _timestampData = [[self class] timestampDataFromDate:[NSDate date]];
         _senderPublicKey = keyPair.publicKey;
         _payloadData = payloadData;
 
-        NSMutableData *packetData = [NSMutableData dataWithCapacity:kBLEVersionLength + kBLETimestampLength + kBLECryptoEd25519PublicKeyLength + payloadData.length + kBLECryptoEd25519SignatureLength];
+        NSMutableData *packetData = [NSMutableData dataWithCapacity:kBLEDataPacketVersionLength + kBLEDataPacketTimestampLength + kBLECryptoEd25519PublicKeyLength + payloadData.length + kBLECryptoEd25519SignatureLength];
         [packetData appendData:self.versionData];
         [packetData appendData:self.timestampData];
         [packetData appendData:self.senderPublicKey];

@@ -9,8 +9,9 @@
 #import "BLEMessagePacket.h"
 #import "BLECrypto.h"
 
-static const NSUInteger kBLEMessageBodyMaxLength = 140;
+const NSUInteger kBLEMessageBodyLength = 140;
 
+//full: [[version=1][timestamp=8][sender_public_key=32][message=140][reply_signature=64]][signature=64]
 @interface BLEMessagePacket()
 @property (nonatomic, strong) NSData *messageBodyData;
 @property (nonatomic, strong) NSData *replyToSignatureData;
@@ -18,6 +19,15 @@ static const NSUInteger kBLEMessageBodyMaxLength = 140;
 
 @implementation BLEMessagePacket
 @dynamic messageBody;
+
+- (instancetype) initWithPacketData:(NSData *)packetData error:(NSError *__autoreleasing *)error {
+    if (self = [super initWithPacketData:packetData error:error]) {
+        NSUInteger messgeBodyOffset = kBLEDataPacketVersionLength + kBLEDataPacketTimestampLength + kBLECryptoEd25519PublicKeyLength;
+        _messageBodyData = [packetData subdataWithRange:NSMakeRange(messgeBodyOffset, kBLEMessageBodyLength)];
+        _replyToSignatureData = [packetData subdataWithRange:NSMakeRange(messgeBodyOffset + kBLEMessageBodyLength, kBLECryptoEd25519SignatureLength)];
+    }
+    return self;
+}
 
 - (instancetype) initWithMessageBody:(NSString*)messageBody
                              keyPair:(BLEKeyPair *)keyPair {
@@ -29,12 +39,11 @@ static const NSUInteger kBLEMessageBodyMaxLength = 140;
 - (instancetype) initWithReplyToSignature:(NSData*)replyToSignatureData
                               messageBody:(NSString*)messageBody
                                   keyPair:(BLEKeyPair *)keyPair {
-    NSAssert(replyToSignatureData.length == kBLECryptoEd25519SignatureLength, @"replyToSignatureData must be 64 bytes");
-    if (replyToSignatureData.length != kBLECryptoEd25519SignatureLength) {
-        return nil;
-    }
-    NSString *paddedMessageBody = [messageBody stringByPaddingToLength:kBLEMessageBodyMaxLength withString:@" " startingAtIndex:0];
+    NSString *paddedMessageBody = [messageBody stringByPaddingToLength:kBLEMessageBodyLength withString:@" " startingAtIndex:0];
     NSData *messageBodyData = [paddedMessageBody dataUsingEncoding:NSUTF8StringEncoding];
+    if (replyToSignatureData.length == 0) {
+        replyToSignatureData = [NSMutableData dataWithLength:kBLECryptoEd25519SignatureLength];
+    }
     NSMutableData *payloadData = [NSMutableData dataWithData:messageBodyData];
     [payloadData appendData:replyToSignatureData];
     

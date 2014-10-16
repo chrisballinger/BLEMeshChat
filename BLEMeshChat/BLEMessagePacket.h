@@ -9,7 +9,8 @@
 #import "BLEDataPacket.h"
 #import "BLECrypto.h"
 
-//[message=140][reply_signature=64]
+//payload: [message=140][reply_signature=64]
+//full: [[version=1][timestamp=8][sender_public_key=32][message=140][reply_signature=64]][signature=64]
 @interface BLEMessagePacket : BLEDataPacket
 
 // Static Properties
@@ -19,10 +20,12 @@
 // Dynamic Properties
 @property (nonatomic, strong, readonly) NSString *messageBody;
 
-
+// Outgoing
 - (instancetype) initWithMessageBody:(NSString*)messageBody keyPair:(BLEKeyPair*)keyPair;
 - (instancetype) initWithReplyToSignature:(NSData*)replyToSignatureData
                               messageBody:(NSString*)messageBody
                                   keyPair:(BLEKeyPair*)keyPair;
+
+extern const NSUInteger kBLEMessageBodyLength; // 140 bytes
 
 @end
