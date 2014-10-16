@@ -8,6 +8,13 @@
 
 #import "BLEPeer.h"
 
+@interface BLEPeer()
+@end
+
 @implementation BLEPeer
+
+- (NSString*) uniqueIdentifier {
+    return [self.publicKeyData base64EncodedStringWithOptions:0];
+}
 
 @end

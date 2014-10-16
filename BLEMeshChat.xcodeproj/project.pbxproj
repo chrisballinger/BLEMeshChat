@@ -15,6 +15,9 @@
 		D92B37E519EA8AE40047AB38 /* UIViewController+BLE.m in Sources */ = {isa = PBXBuildFile; fileRef = D92B37E419EA8AE40047AB38 /* UIViewController+BLE.m */; };
 		D92B37E819EA918C0047AB38 /* BLEPeripheralDeviceTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D92B37E719EA918C0047AB38 /* BLEPeripheralDeviceTableViewCell.m */; };
 		D92B37EB19EA92920047AB38 /* BLEYapObject.m in Sources */ = {isa = PBXBuildFile; fileRef = D92B37EA19EA92920047AB38 /* BLEYapObject.m */; };
+		D99FEAAA19EF3E0F003AE5CF /* BLELocalPeer.m in Sources */ = {isa = PBXBuildFile; fileRef = D99FEAA919EF3E0F003AE5CF /* BLELocalPeer.m */; };
+		D99FEAAD19EF4071003AE5CF /* BLEDataPacket.m in Sources */ = {isa = PBXBuildFile; fileRef = D99FEAAC19EF4071003AE5CF /* BLEDataPacket.m */; };
+		D99FEAB119EF4821003AE5CF /* BLEMessagePacket.m in Sources */ = {isa = PBXBuildFile; fileRef = D99FEAB019EF4821003AE5CF /* BLEMessagePacket.m */; };
 		D9BE2D2E19EA0B2600A7A82F /* BLEScannerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D9BE2D2D19EA0B2600A7A82F /* BLEScannerViewController.m */; };
 		D9BE2D3219EA0C3A00A7A82F /* BLEDatabaseManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D9BE2D3119EA0C3A00A7A82F /* BLEDatabaseManager.m */; };
 		D9C425E419E89D9D004F7335 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = D9C425E319E89D9D004F7335 /* main.m */; };
@@ -56,6 +59,12 @@
 		D92B37E719EA918C0047AB38 /* BLEPeripheralDeviceTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLEPeripheralDeviceTableViewCell.m; sourceTree = "<group>"; };
 		D92B37E919EA92920047AB38 /* BLEYapObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLEYapObject.h; sourceTree = "<group>"; };
 		D92B37EA19EA92920047AB38 /* BLEYapObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLEYapObject.m; sourceTree = "<group>"; };
+		D99FEAA819EF3E0F003AE5CF /* BLELocalPeer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLELocalPeer.h; sourceTree = "<group>"; };
+		D99FEAA919EF3E0F003AE5CF /* BLELocalPeer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLELocalPeer.m; sourceTree = "<group>"; };
+		D99FEAAB19EF4071003AE5CF /* BLEDataPacket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLEDataPacket.h; sourceTree = "<group>"; };
+		D99FEAAC19EF4071003AE5CF /* BLEDataPacket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLEDataPacket.m; sourceTree = "<group>"; };
+		D99FEAAF19EF4821003AE5CF /* BLEMessagePacket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLEMessagePacket.h; sourceTree = "<group>"; };
+		D99FEAB019EF4821003AE5CF /* BLEMessagePacket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLEMessagePacket.m; sourceTree = "<group>"; };
 		D9BE2D2C19EA0B2600A7A82F /* BLEScannerViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLEScannerViewController.h; sourceTree = "<group>"; };
 		D9BE2D2D19EA0B2600A7A82F /* BLEScannerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLEScannerViewController.m; sourceTree = "<group>"; };
 		D9BE2D3019EA0C3A00A7A82F /* BLEDatabaseManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLEDatabaseManager.h; sourceTree = "<group>"; };
@@ -134,6 +143,9 @@
 		D90CF5F119ECC0C6006222AB /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				D99FEAAE19EF4075003AE5CF /* Protocol */,
+				D99FEAA819EF3E0F003AE5CF /* BLELocalPeer.h */,
+				D99FEAA919EF3E0F003AE5CF /* BLELocalPeer.m */,
 				D90CF5E319EC8D2E006222AB /* BLEPeer.h */,
 				D90CF5E419EC8D2E006222AB /* BLEPeer.m */,
 				D90CF5E619EC8D3C006222AB /* BLEMessage.h */,
@@ -144,6 +156,17 @@
 				D9C4260919E8A4D5004F7335 /* BLEPeripheralDevice.m */,
 			);
 			name = Model;
+			sourceTree = "<group>";
+		};
+		D99FEAAE19EF4075003AE5CF /* Protocol */ = {
+			isa = PBXGroup;
+			children = (
+				D99FEAAF19EF4821003AE5CF /* BLEMessagePacket.h */,
+				D99FEAB019EF4821003AE5CF /* BLEMessagePacket.m */,
+				D99FEAAB19EF4071003AE5CF /* BLEDataPacket.h */,
+				D99FEAAC19EF4071003AE5CF /* BLEDataPacket.m */,
+			);
+			name = Protocol;
 			sourceTree = "<group>";
 		};
 		D9BE2D2F19EA0B3400A7A82F /* Scanning */ = {
@@ -400,6 +423,7 @@
 				D9C4261119E8A52B004F7335 /* BLEBroadcaster.m in Sources */,
 				D9BE2D2E19EA0B2600A7A82F /* BLEScannerViewController.m in Sources */,
 				D9C425EA19E89D9D004F7335 /* BLEBroadcastViewController.m in Sources */,
+				D99FEAAA19EF3E0F003AE5CF /* BLELocalPeer.m in Sources */,
 				D92B37E819EA918C0047AB38 /* BLEPeripheralDeviceTableViewCell.m in Sources */,
 				D9C4260E19E8A513004F7335 /* BLEScanner.m in Sources */,
 				D9C4260A19E8A4D5004F7335 /* BLEPeripheralDevice.m in Sources */,
@@ -408,10 +432,12 @@
 				D9C425E719E89D9D004F7335 /* BLEAppDelegate.m in Sources */,
 				D9BE2D3219EA0C3A00A7A82F /* BLEDatabaseManager.m in Sources */,
 				D9C425E419E89D9D004F7335 /* main.m in Sources */,
+				D99FEAAD19EF4071003AE5CF /* BLEDataPacket.m in Sources */,
 				D92B37EB19EA92920047AB38 /* BLEYapObject.m in Sources */,
 				D90CF5EB19EC8DD8006222AB /* BLEMessagesViewController.m in Sources */,
 				D90CF5E819EC8D3C006222AB /* BLEMessage.m in Sources */,
 				D90CF5EF19ECC098006222AB /* BLECrypto.m in Sources */,
+				D99FEAB119EF4821003AE5CF /* BLEMessagePacket.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -11,8 +11,8 @@
 @interface BLEMessage : BLEYapObject
 
 @property (nonatomic, strong, readonly) NSString *body;
+@property (nonatomic, readonly) uint64_t timestamp;
+@property (nonatomic, strong, readonly) NSData *signature;
 @property (nonatomic, strong, readonly) NSDate *receivedDate;
-
-- (instancetype) initWithBody:(NSString*)body;
 
 @end

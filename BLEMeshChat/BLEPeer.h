@@ -10,7 +10,7 @@
 
 @interface BLEPeer : BLEYapObject
 
-/** Ed25519 public key */
+/** Ed25519 public key, also used as unique identifier */
 @property (nonatomic, strong, readonly) NSData *publicKeyData;
 @property (nonatomic, strong) NSString *displayName;
 

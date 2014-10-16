@@ -15,7 +15,7 @@
 }
 
 - (NSString*) uniqueIdentifier {
-    NSAssert(YES, @"You must implement this method in your subclass!");
+    NSAssert(NO, @"You must implement this method in your subclass!");
     return nil;
 }
 

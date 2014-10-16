@@ -10,4 +10,11 @@
 
 @implementation BLEMessage
 
+- (instancetype) initWithMessageData:(NSData*)messageData {
+    if (self = [super init]) {
+        
+    }
+    return self;
+}
+
 @end

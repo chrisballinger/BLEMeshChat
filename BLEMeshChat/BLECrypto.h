@@ -26,6 +26,7 @@ typedef NS_ENUM(NSUInteger, BLEKeyType) {
 + (BOOL) verifyData:(NSData*)data signature:(NSData*)signature publicKey:(NSData*)publicKey;
 
 + (BLEKeyPair*) generateKeyPairWithType:(BLEKeyType)type;
+
 /*
 + (BLEKeyPair*) convertKeyPair:(BLEKeyPair*)keyPair toType:(BLEKeyType)outputType;
 + (NSData*) convertPrivateKey:(NSData*)privateKey fromType:(BLEKeyType)fromType toType:(BLEKeyType)toType;
