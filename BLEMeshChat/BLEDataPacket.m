@@ -9,6 +9,7 @@
 #import "BLEDataPacket.h"
 #import "BLECrypto.h"
 
+static const NSUInteger kBLECurrentProtocolVersion = 1;
 static const NSUInteger kBLEVersionOffset = 0;
 static const NSUInteger kBLEVersionLength = 1;
 static const NSUInteger kBLETimestampOffset = kBLEVersionOffset + kBLEVersionLength;
@@ -16,7 +17,6 @@ static const NSUInteger kBLETimestampLength = 8;
 static const NSUInteger kBLESenderPublicKeyOffset = kBLETimestampOffset + kBLETimestampLength;
 
 @interface BLEDataPacket()
-/** full raw packet data */
 @end
 
 @implementation BLEDataPacket
@@ -54,7 +54,7 @@ static const NSUInteger kBLESenderPublicKeyOffset = kBLETimestampOffset + kBLETi
 
     NSUInteger dataLength = signatureOffset - dataOffset;
     
-    _data = [packetData subdataWithRange:NSMakeRange(dataOffset, dataLength)];
+    _payloadData = [packetData subdataWithRange:NSMakeRange(dataOffset, dataLength)];
     _signature = [packetData subdataWithRange:NSMakeRange(signatureOffset, kBLECryptoEd25519SignatureLength)];
     return YES;
 }
@@ -71,6 +71,11 @@ static const NSUInteger kBLESenderPublicKeyOffset = kBLETimestampOffset + kBLETi
     return version;
 }
 
++ (NSData*) versionDataFromVersion:(uint8_t)version {
+    NSData *versionData = [NSData dataWithBytes:&version length:sizeof(uint8_t)];
+    return versionData;
+}
+
 - (NSDate*) timestampDate {
     uint64_t timestamp = [self timestamp];
     NSTimeInterval timeInterval = timestamp / 1000;
@@ -83,6 +88,36 @@ static const NSUInteger kBLESenderPublicKeyOffset = kBLETimestampOffset + kBLETi
     uint64_t timestamp = 0;
     timestamp = CFSwapInt64LittleToHost(*(uint64_t*)(self.timestampData.bytes));
     return timestamp;
+}
+
++ (NSData*) timestampDataFromDate:(NSDate*)date {
+    NSTimeInterval timeIntervalSince1970 = [date timeIntervalSince1970];
+    uint64_t unixTime = CFSwapInt64HostToLittle(timeIntervalSince1970 * 1000);
+    NSData *timestampData = [NSData dataWithBytes:&unixTime length:sizeof(uint64_t)];
+    return timestampData;
+}
+
+#pragma mark Outgoing Data
+
+- (instancetype) initWithPayloadData:(NSData*)payloadData keyPair:(BLEKeyPair*)keyPair {
+    if (self = [super init]) {
+        _versionData = [[self class] versionDataFromVersion:kBLECurrentProtocolVersion];
+        _timestampData = [[self class] timestampDataFromDate:[NSDate date]];
+        _senderPublicKey = keyPair.publicKey;
+        _payloadData = payloadData;
+
+        NSMutableData *packetData = [NSMutableData dataWithCapacity:kBLEVersionLength + kBLETimestampLength + kBLECryptoEd25519PublicKeyLength + payloadData.length + kBLECryptoEd25519SignatureLength];
+        [packetData appendData:self.versionData];
+        [packetData appendData:self.timestampData];
+        [packetData appendData:self.senderPublicKey];
+        [packetData appendData:self.payloadData];
+        
+        NSData *signature = [BLECrypto signatureForData:packetData privateKey:keyPair.privateKey];
+        [packetData appendData:signature];
+        
+        _packetData = packetData;
+    }
+    return self;
 }
 
 @end

@@ -143,7 +143,6 @@
 		D90CF5F119ECC0C6006222AB /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				D99FEAAE19EF4075003AE5CF /* Protocol */,
 				D99FEAA819EF3E0F003AE5CF /* BLELocalPeer.h */,
 				D99FEAA919EF3E0F003AE5CF /* BLELocalPeer.m */,
 				D90CF5E319EC8D2E006222AB /* BLEPeer.h */,
@@ -167,6 +166,15 @@
 				D99FEAAC19EF4071003AE5CF /* BLEDataPacket.m */,
 			);
 			name = Protocol;
+			sourceTree = "<group>";
+		};
+		D99FEAB519EFA50F003AE5CF /* Categories */ = {
+			isa = PBXGroup;
+			children = (
+				D92B37E319EA8AE40047AB38 /* UIViewController+BLE.h */,
+				D92B37E419EA8AE40047AB38 /* UIViewController+BLE.m */,
+			);
+			name = Categories;
 			sourceTree = "<group>";
 		};
 		D9BE2D2F19EA0B3400A7A82F /* Scanning */ = {
@@ -216,14 +224,14 @@
 		D9C425E019E89D9D004F7335 /* BLEMeshChat */ = {
 			isa = PBXGroup;
 			children = (
+				D99FEAB519EFA50F003AE5CF /* Categories */,
+				D99FEAAE19EF4075003AE5CF /* Protocol */,
 				D90CF5F019ECC0B2006222AB /* Messaging */,
 				D9BE2D2F19EA0B3400A7A82F /* Scanning */,
 				D9BE2D3319EA2A8500A7A82F /* Broadcasting */,
 				D9C4260B19E8A4DB004F7335 /* Data */,
 				D9C425E519E89D9D004F7335 /* BLEAppDelegate.h */,
 				D9C425E619E89D9D004F7335 /* BLEAppDelegate.m */,
-				D92B37E319EA8AE40047AB38 /* UIViewController+BLE.h */,
-				D92B37E419EA8AE40047AB38 /* UIViewController+BLE.m */,
 				D9C4261519E8AA85004F7335 /* BLELog.h */,
 				D9C4261619E8AB3E004F7335 /* Resources */,
 				D9C425E119E89D9D004F7335 /* Supporting Files */,

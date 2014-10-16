@@ -7,14 +7,16 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "BLECrypto.h"
 
+// [[version=1][timestamp=8][sender_public_key=32][data=n]][signature=64]
 @interface BLEDataPacket : NSObject
 
 // Static Properties
 @property (nonatomic, readonly) NSData *versionData;
 @property (nonatomic, readonly) NSData *timestampData;
 @property (nonatomic, strong, readonly) NSData *senderPublicKey;
-@property (nonatomic, strong, readonly) NSData *data;
+@property (nonatomic, strong, readonly) NSData *payloadData;
 @property (nonatomic, strong, readonly) NSData *signature;
 /** full raw packet data */
 @property (nonatomic, strong, readonly) NSData *packetData;
@@ -24,9 +26,13 @@
 @property (nonatomic, strong, readonly) NSDate *timestampDate;
 @property (nonatomic, readonly) uint64_t timestamp;
 
-// [[version=1][timestamp=8][sender_public_key=32][data=n]][signature=64]
-- (instancetype) initWithPacketData:(NSData*)packetData error:(NSError**)error;
-
+// Incoming Data
+- (instancetype) initWithPacketData:(NSData*)packetData
+                              error:(NSError**)error;
+/** @return success */
 - (BOOL) hasValidSignature;
+
+// Outgoing Data
+- (instancetype) initWithPayloadData:(NSData*)payloadData keyPair:(BLEKeyPair*)keyPair;
 
 @end
