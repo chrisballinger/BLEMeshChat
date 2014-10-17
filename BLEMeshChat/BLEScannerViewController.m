@@ -26,7 +26,6 @@ static NSString * const kBLEPeripheralDeviceCellIdentifier = @"kBLEPeripheralDev
 - (instancetype) init {
     if (self = [super init]) {
         self.title = NSLocalizedString(@"Scan", nil);
-        [self setupScanner];
     }
     return self;
 }
@@ -36,12 +35,6 @@ static NSString * const kBLEPeripheralDeviceCellIdentifier = @"kBLEPeripheralDev
     [self setupDeviceTableView];
     [self setupMappings];
     [self.view updateConstraintsIfNeeded]; // why is this needed?
-}
-
-
-- (void) setupScanner {
-    _scanner = [[BLEScanner alloc] init];
-    [self.scanner startScanning];
 }
 
 - (void) setupDeviceTableView {

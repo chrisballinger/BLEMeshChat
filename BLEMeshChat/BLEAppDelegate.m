@@ -43,6 +43,9 @@
         [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
     }
     
+    BLEKeyPair *keyPair = [BLECrypto generateKeyPairWithType:BLEKeyTypeEd25519];
+    self.transportManager = [[BLETransportManager alloc] initWithKeyPair:keyPair];
+    
     UIUserNotificationSettings *notificationSettings = [UIUserNotificationSettings settingsForTypes:UIUserNotificationTypeAlert | UIUserNotificationTypeSound categories:nil];
     [[UIApplication sharedApplication] registerUserNotificationSettings:notificationSettings];
     

@@ -19,6 +19,7 @@
 		D99FEAAD19EF4071003AE5CF /* BLEDataPacket.m in Sources */ = {isa = PBXBuildFile; fileRef = D99FEAAC19EF4071003AE5CF /* BLEDataPacket.m */; };
 		D99FEAB119EF4821003AE5CF /* BLEMessagePacket.m in Sources */ = {isa = PBXBuildFile; fileRef = D99FEAB019EF4821003AE5CF /* BLEMessagePacket.m */; };
 		D99FEAB819EFB66F003AE5CF /* BLEIdentityPacket.m in Sources */ = {isa = PBXBuildFile; fileRef = D99FEAB719EFB66F003AE5CF /* BLEIdentityPacket.m */; };
+		D99FEABB19F0641B003AE5CF /* BLETransportManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D99FEABA19F0641B003AE5CF /* BLETransportManager.m */; };
 		D9BE2D2E19EA0B2600A7A82F /* BLEScannerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D9BE2D2D19EA0B2600A7A82F /* BLEScannerViewController.m */; };
 		D9BE2D3219EA0C3A00A7A82F /* BLEDatabaseManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D9BE2D3119EA0C3A00A7A82F /* BLEDatabaseManager.m */; };
 		D9C425E419E89D9D004F7335 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = D9C425E319E89D9D004F7335 /* main.m */; };
@@ -68,6 +69,8 @@
 		D99FEAB019EF4821003AE5CF /* BLEMessagePacket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLEMessagePacket.m; sourceTree = "<group>"; };
 		D99FEAB619EFB66F003AE5CF /* BLEIdentityPacket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLEIdentityPacket.h; sourceTree = "<group>"; };
 		D99FEAB719EFB66F003AE5CF /* BLEIdentityPacket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLEIdentityPacket.m; sourceTree = "<group>"; };
+		D99FEAB919F0641B003AE5CF /* BLETransportManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLETransportManager.h; sourceTree = "<group>"; };
+		D99FEABA19F0641B003AE5CF /* BLETransportManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLETransportManager.m; sourceTree = "<group>"; };
 		D9BE2D2C19EA0B2600A7A82F /* BLEScannerViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLEScannerViewController.h; sourceTree = "<group>"; };
 		D9BE2D2D19EA0B2600A7A82F /* BLEScannerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLEScannerViewController.m; sourceTree = "<group>"; };
 		D9BE2D3019EA0C3A00A7A82F /* BLEDatabaseManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLEDatabaseManager.h; sourceTree = "<group>"; };
@@ -182,6 +185,19 @@
 			name = Categories;
 			sourceTree = "<group>";
 		};
+		D99FEABC19F0641F003AE5CF /* Transport */ = {
+			isa = PBXGroup;
+			children = (
+				D99FEAB919F0641B003AE5CF /* BLETransportManager.h */,
+				D99FEABA19F0641B003AE5CF /* BLETransportManager.m */,
+				D9C4260C19E8A513004F7335 /* BLEScanner.h */,
+				D9C4260D19E8A513004F7335 /* BLEScanner.m */,
+				D9C4260F19E8A52B004F7335 /* BLEBroadcaster.h */,
+				D9C4261019E8A52B004F7335 /* BLEBroadcaster.m */,
+			);
+			name = Transport;
+			sourceTree = "<group>";
+		};
 		D9BE2D2F19EA0B3400A7A82F /* Scanning */ = {
 			isa = PBXGroup;
 			children = (
@@ -189,8 +205,6 @@
 				D92B37E719EA918C0047AB38 /* BLEPeripheralDeviceTableViewCell.m */,
 				D9BE2D2C19EA0B2600A7A82F /* BLEScannerViewController.h */,
 				D9BE2D2D19EA0B2600A7A82F /* BLEScannerViewController.m */,
-				D9C4260C19E8A513004F7335 /* BLEScanner.h */,
-				D9C4260D19E8A513004F7335 /* BLEScanner.m */,
 			);
 			name = Scanning;
 			sourceTree = "<group>";
@@ -200,8 +214,6 @@
 			children = (
 				D9C425E819E89D9D004F7335 /* BLEBroadcastViewController.h */,
 				D9C425E919E89D9D004F7335 /* BLEBroadcastViewController.m */,
-				D9C4260F19E8A52B004F7335 /* BLEBroadcaster.h */,
-				D9C4261019E8A52B004F7335 /* BLEBroadcaster.m */,
 			);
 			name = Broadcasting;
 			sourceTree = "<group>";
@@ -230,6 +242,7 @@
 			isa = PBXGroup;
 			children = (
 				D99FEAB519EFA50F003AE5CF /* Categories */,
+				D99FEABC19F0641F003AE5CF /* Transport */,
 				D99FEAAE19EF4075003AE5CF /* Protocol */,
 				D90CF5F019ECC0B2006222AB /* Messaging */,
 				D9BE2D2F19EA0B3400A7A82F /* Scanning */,
@@ -452,6 +465,7 @@
 				D90CF5E819EC8D3C006222AB /* BLEMessage.m in Sources */,
 				D90CF5EF19ECC098006222AB /* BLECrypto.m in Sources */,
 				D99FEAB119EF4821003AE5CF /* BLEMessagePacket.m in Sources */,
+				D99FEABB19F0641B003AE5CF /* BLETransportManager.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

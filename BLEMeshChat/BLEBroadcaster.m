@@ -7,6 +7,9 @@
 //
 
 #import "BLEBroadcaster.h"
+#import "BLECrypto.h"
+#import "BLEIdentityPacket.h"
+#import "BLEMessagePacket.h"
 
 static NSString * const kBLEBroadcasterRestoreIdentifier = @"kBLEBroadcasterRestoreIdentifier";
 
@@ -27,12 +30,18 @@ static NSString * const kBLEMessagesWriteCharacteristicUUIDString = @"6EAEC220-5
 @property (nonatomic, strong) CBMutableCharacteristic *identityReadCharacteristic;
 @property (nonatomic, strong) CBMutableCharacteristic *identityWriteCharacteristic;
 @property (nonatomic) dispatch_queue_t eventQueue;
+
+@property (nonatomic, strong) BLEKeyPair *keyPair;
+@property (nonatomic, strong) BLEMessagePacket *messagePacket;
+@property (nonatomic, strong) BLEIdentityPacket *identity;
+
 @end
 
 @implementation BLEBroadcaster
 
-- (instancetype) init {
+- (instancetype) initWithKeyPair:(BLEKeyPair*)keyPair {
     if (self = [super init]) {
+        _keyPair = keyPair;
         _eventQueue = dispatch_queue_create("BLEBroadcaster Event Queue", 0);
         _peripheralManager = [[CBPeripheralManager alloc] initWithDelegate:self
                                                                      queue:_eventQueue
@@ -40,6 +49,14 @@ static NSString * const kBLEMessagesWriteCharacteristicUUIDString = @"6EAEC220-5
                                                                              CBPeripheralManagerOptionShowPowerAlertKey: @YES}];
     }
     return self;
+}
+
+- (void) broadcastMessagePacket:(BLEMessagePacket *)messagePacket {
+    self.messagePacket = messagePacket;
+}
+
+- (void) broadcastIdentityPacket:(BLEIdentityPacket *)identityPacket {
+    self.identity = identityPacket;
 }
 
 - (BOOL) startBroadcasting {
@@ -135,7 +152,6 @@ static NSString * const kBLEMessagesWriteCharacteristicUUIDString = @"6EAEC220-5
     [restoredServices enumerateObjectsUsingBlock:^(CBMutableService *service, NSUInteger idx, BOOL *stop) {
         if ([service.UUID isEqual:[BLEBroadcaster meshChatServiceUUID]]) {
             self.meshChatService = service;
-            *stop = YES;
             DDLogInfo(@"Restored service: %@", service);
             [self.meshChatService.characteristics enumerateObjectsUsingBlock:^(CBMutableCharacteristic *characteristic, NSUInteger idx, BOOL *stop) {
                 CBUUID *uuid = characteristic.UUID;
@@ -145,9 +161,12 @@ static NSString * const kBLEMessagesWriteCharacteristicUUIDString = @"6EAEC220-5
                     self.messagesWriteCharacteristic = characteristic;
                 } else if ([uuid isEqual:[BLEBroadcaster identityReadCharacteristicUUID]]) {
                     self.identityReadCharacteristic = characteristic;
+                } else if ([uuid isEqual:[BLEBroadcaster identityWriteCharacteristicUUID]]) {
+                    self.identityWriteCharacteristic = characteristic;
                 }
                 DDLogInfo(@"Restored characteristic: %@", characteristic);
             }];
+            *stop = YES;
         }
     }];
     NSDictionary *restoredAdvertisementDict = dict[CBPeripheralManagerRestoredStateAdvertisementDataKey];
@@ -175,9 +194,9 @@ static NSString * const kBLEMessagesWriteCharacteristicUUIDString = @"6EAEC220-5
     CBUUID *requestUUID = request.characteristic.UUID;
     NSData *responseData = nil;
     if ([requestUUID isEqual:self.messagesReadCharacteristic.UUID]) {
-        responseData = [@"msg_ack" dataUsingEncoding:NSUTF8StringEncoding];
+        responseData = [self.messagePacket packetData];
     } else if ([requestUUID isEqual:self.identityReadCharacteristic.UUID]) {
-        responseData = [@"ident_ack" dataUsingEncoding:NSUTF8StringEncoding];
+        responseData = [self.identity packetData];
     }
     
     if (responseData) {
@@ -192,23 +211,17 @@ static NSString * const kBLEMessagesWriteCharacteristicUUIDString = @"6EAEC220-5
     DDLogVerbose(@"%@: %@ %@", THIS_FILE, THIS_METHOD, requests);
     [requests enumerateObjectsUsingBlock:^(CBATTRequest *request, NSUInteger idx, BOOL *stop) {
         CBUUID *uuid = request.characteristic.UUID;
-        CBATTError result;
-        NSString *writeString = nil;
-        NSData *writeData = request.value;
-        if (writeData) {
-            uint8_t *writeDataBytes = (uint8_t *)[writeData bytes];
-            NSUInteger writeDataLength = writeData.length;
-            writeString = [[NSString alloc] initWithBytes:writeDataBytes length:writeDataLength encoding:NSUTF8StringEncoding];
-        }
+        CBATTError result = CBATTErrorWriteNotPermitted;
         if ([uuid isEqual:self.messagesWriteCharacteristic.UUID]) {
             result = CBATTErrorSuccess;
-            DDLogInfo(@"incoming message: %@", writeString);
+            BLEMessagePacket *message = [[BLEMessagePacket alloc] initWithPacketData:request.value error:nil];
+            DDLogInfo(@"incoming message: %@", message.messageBody);
         } else if ([uuid isEqual:self.identityWriteCharacteristic.UUID]) {
             result = CBATTErrorSuccess;
-            DDLogInfo(@"incoming identity: %@", writeString);
+            BLEIdentityPacket *identity = [[BLEIdentityPacket alloc] initWithPacketData:request.value error:nil];
+            DDLogInfo(@"incoming identity: %@", identity.displayName);
         } else {
-            DDLogError(@"unrecognized write: %@", writeString);
-            result = CBATTErrorWriteNotPermitted;
+            DDLogError(@"unrecognized write: %@", request.value);
         }
         [peripheral respondToRequest:request withResult:result];
     }];

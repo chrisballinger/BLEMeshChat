@@ -54,4 +54,13 @@ const NSUInteger kBLEMessageBodyLength = 140;
     return self;
 }
 
+- (NSString*) messageBody {
+    NSAssert(self.messageBodyData.length > 0, @"must have a body!");
+    if (self.messageBodyData.length == 0) {
+        return @"";
+    }
+    NSString *messageBody = [[NSString alloc] initWithData:self.messageBodyData encoding:NSUTF8StringEncoding];
+    return messageBody;
+}
+
 @end

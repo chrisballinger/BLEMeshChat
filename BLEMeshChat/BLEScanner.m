@@ -18,12 +18,16 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
 @property (nonatomic) dispatch_queue_t eventQueue;
 @property (nonatomic, strong) YapDatabaseConnection *readConnection;
 @property (nonatomic, strong) NSMutableSet *discoveredDevices;
+@property (nonatomic, strong) BLEKeyPair *keyPair;
+@property (nonatomic, strong) BLEMessagePacket *messagePacket;
+@property (nonatomic, strong) BLEIdentityPacket *identity;
 @end
 
 @implementation BLEScanner
 
-- (instancetype) init {
+- (instancetype) initWithKeyPair:(BLEKeyPair*)keyPair {
     if (self = [super init]) {
+        _keyPair = keyPair;
         _eventQueue = dispatch_queue_create("BLEScanner Event Queue", 0);
         _centralManager = [[CBCentralManager alloc] initWithDelegate:self
                                                                      queue:_eventQueue
@@ -50,6 +54,14 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
 
 - (void) stopScanning {
     [self.centralManager stopScan];
+}
+
+- (void) broadcastMessagePacket:(BLEMessagePacket *)messagePacket {
+    self.messagePacket = messagePacket;
+}
+
+- (void) broadcastIdentityPacket:(BLEIdentityPacket *)identityPacket {
+    self.identity = identityPacket;
 }
 
 - (void) updateDeviceFromPeripheral:(CBPeripheral*)peripheral RSSI:(NSNumber*)RSSI {
@@ -186,9 +198,9 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
             } else if ([uuid isEqual:[BLEBroadcaster identityReadCharacteristicUUID]]) {
                 [peripheral readValueForCharacteristic:characteristic];
             } else if ([uuid isEqual:[BLEBroadcaster messagesWriteCharacteristicUUID]]) {
-                [peripheral writeValue:[@"msg" dataUsingEncoding:NSUTF8StringEncoding] forCharacteristic:characteristic type:CBCharacteristicWriteWithResponse];
+                [peripheral writeValue:[self.messagePacket packetData] forCharacteristic:characteristic type:CBCharacteristicWriteWithResponse];
             } else if ([uuid isEqual:[BLEBroadcaster identityWriteCharacteristicUUID]]) {
-                [peripheral writeValue:[@"ident" dataUsingEncoding:NSUTF8StringEncoding] forCharacteristic:characteristic type:CBCharacteristicWriteWithResponse];
+                [peripheral writeValue:[self.identity packetData] forCharacteristic:characteristic type:CBCharacteristicWriteWithResponse];
             }
         }];
     }
