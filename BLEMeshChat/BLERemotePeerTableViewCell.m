@@ -1,18 +1,18 @@
 //
-//  BLEDeviceTableViewCell.m
+//  BLERemotePeerTableViewCell.m
 //  BLEMeshChat
 //
 //  Created by Christopher Ballinger on 10/12/14.
 //  Copyright (c) 2014 Christopher Ballinger. All rights reserved.
 //
 
-#import "BLEPeripheralDeviceTableViewCell.h"
+#import "BLERemotePeerTableViewCell.h"
 
-@interface BLEPeripheralDeviceTableViewCell()
+@interface BLERemotePeerTableViewCell()
 @property (nonatomic) BOOL hasAddedConstraints;
 @end
 
-@implementation BLEPeripheralDeviceTableViewCell
+@implementation BLERemotePeerTableViewCell
 
 - (instancetype) initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
     if (self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]) {
@@ -77,17 +77,17 @@
     // Configure the view for the selected state
 }
 
-- (void) setDevice:(BLEPeripheralDevice*)device {
+- (void) setRemotePeer:(BLERemotePeer*)remotePeer {
     NSString *name = nil;
-    if (device.name) {
-        name = [device.name stringByAppendingFormat:@" %@", device.uniqueIdentifier];
+    if (remotePeer.displayName.length) {
+        name = [remotePeer.displayName stringByAppendingFormat:@" %@", remotePeer.yapKey];
     } else {
-        name = device.uniqueIdentifier;
+        name = remotePeer.yapKey;
     }
-    self.displayNameLabel.text = name;
-    self.signalStrengthLabel.text = device.lastSeenRSSI.stringValue;
-    self.lastSeenDateLabel.text = device.lastSeenDate.description;
-    self.connectionStateLabel.text = [NSString stringWithFormat:@"%d", (int)device.numberOfTimesSeen];
+    self.displayNameLabel.text = remotePeer.displayName;
+    self.signalStrengthLabel.text = @"";
+    self.lastSeenDateLabel.text = remotePeer.lastSeenDate.description;
+    self.connectionStateLabel.text = [NSString stringWithFormat:@"%d", (int)remotePeer.numberOfTimesSeen];
 }
 
 @end

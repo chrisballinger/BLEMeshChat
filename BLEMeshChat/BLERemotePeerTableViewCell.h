@@ -1,5 +1,5 @@
 //
-//  BLEDeviceTableViewCell.h
+//  BLERemotePeerTableViewCell.h
 //  BLEMeshChat
 //
 //  Created by Christopher Ballinger on 10/12/14.
@@ -7,15 +7,15 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "BLEPeripheralDevice.h"
+#import "BLERemotePeer.h"
 
-@interface BLEPeripheralDeviceTableViewCell : UITableViewCell
+@interface BLERemotePeerTableViewCell : UITableViewCell
 
 @property (nonatomic, strong, readonly) UILabel *displayNameLabel;
 @property (nonatomic, strong, readonly) UILabel *signalStrengthLabel;
 @property (nonatomic, strong, readonly) UILabel *lastSeenDateLabel;
 @property (nonatomic, strong, readonly) UILabel *connectionStateLabel;
 
-- (void) setDevice:(BLEPeripheralDevice*)device;
+- (void) setRemotePeer:(BLERemotePeer*)remotePeer;
 
 @end

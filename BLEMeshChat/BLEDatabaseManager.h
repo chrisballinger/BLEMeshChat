@@ -13,7 +13,9 @@
 @property (nonatomic, strong, readonly) YapDatabase *database;
 @property (nonatomic, strong, readonly) YapDatabaseConnection *readWriteConnection;
 
-@property (nonatomic, strong, readonly) NSString *allDevicesViewName;
+@property (nonatomic, strong, readonly) NSString *allLocalPeersViewName;
+@property (nonatomic, strong, readonly) NSString *allRemotePeersViewName;
+@property (nonatomic, strong, readonly) NSString *allMessagesViewName;
 
 + (instancetype) sharedInstance;
 

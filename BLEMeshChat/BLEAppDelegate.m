@@ -11,6 +11,10 @@
 #import "BLEScannerViewController.h"
 #import "DDTTYLogger.h"
 #import "DDASLLogger.h"
+#import "BLELocalPeer.h"
+#import "BLEDatabaseManager.h"
+
+static NSString * const kBLEPrimaryLocalPeerKey = @"kBLEPrimaryLocalPeerKey";
 
 @interface BLEAppDelegate ()
 
@@ -43,8 +47,23 @@
         [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
     }
     
-    BLEKeyPair *keyPair = [BLECrypto generateKeyPairWithType:BLEKeyTypeEd25519];
-    self.transportManager = [[BLETransportManager alloc] initWithKeyPair:keyPair];
+    __block BLELocalPeer *localPeer = nil;
+    NSString *primaryLocalPeerYapKey = [[NSUserDefaults standardUserDefaults] objectForKey:kBLEPrimaryLocalPeerKey];
+    if (primaryLocalPeerYapKey) {
+        [[BLEDatabaseManager sharedInstance].readWriteConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+            localPeer = [transaction objectForKey:primaryLocalPeerYapKey inCollection:[BLELocalPeer yapCollection]];
+        }];
+    }
+    if (!localPeer) {
+        BLEKeyPair *keyPair = [BLEKeyPair keyPairWithType:BLEKeyTypeEd25519];
+        localPeer = [[BLELocalPeer alloc] initWithDisplayName:@"Test User" keyPair:keyPair];
+        [[BLEDatabaseManager sharedInstance].readWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+            [transaction setObject:localPeer forKey:primaryLocalPeerYapKey inCollection:[BLELocalPeer yapCollection]];
+        }];
+        [[NSUserDefaults standardUserDefaults] setObject:localPeer.yapKey forKey:kBLEPrimaryLocalPeerKey];
+        [[NSUserDefaults standardUserDefaults] synchronize];
+    }
+    self.transportManager = [[BLETransportManager alloc] initWithKeyPair:localPeer.keyPair];
     
     UIUserNotificationSettings *notificationSettings = [UIUserNotificationSettings settingsForTypes:UIUserNotificationTypeAlert | UIUserNotificationTypeSound categories:nil];
     [[UIApplication sharedApplication] registerUserNotificationSettings:notificationSettings];

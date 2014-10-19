@@ -9,8 +9,8 @@
 #import "BLEScannerViewController.h"
 #import "BLEScanner.h"
 #import "BLEDatabaseManager.h"
-#import "BLEPeripheralDevice.h"
-#import "BLEPeripheralDeviceTableViewCell.h"
+#import "BLERemotePeer.h"
+#import "BLERemotePeerTableViewCell.h"
 
 static NSString * const kBLEPeripheralDeviceCellIdentifier = @"kBLEPeripheralDeviceCellIdentifier";
 
@@ -43,7 +43,7 @@ static NSString * const kBLEPeripheralDeviceCellIdentifier = @"kBLEPeripheralDev
     self.deviceTableView.delegate = self;
     self.deviceTableView.dataSource = self;
     self.deviceTableView.rowHeight = 80.0f;
-    [self.deviceTableView registerClass:[BLEPeripheralDeviceTableViewCell class] forCellReuseIdentifier:kBLEPeripheralDeviceCellIdentifier];
+    [self.deviceTableView registerClass:[BLERemotePeerTableViewCell class] forCellReuseIdentifier:kBLEPeripheralDeviceCellIdentifier];
     [self.view addSubview:self.deviceTableView];
 }
 
@@ -90,12 +90,12 @@ static NSString * const kBLEPeripheralDeviceCellIdentifier = @"kBLEPeripheralDev
 }
 
 - (UITableViewCell*) tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    BLEPeripheralDeviceTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:kBLEPeripheralDeviceCellIdentifier forIndexPath:indexPath];
-    __block BLEPeripheralDevice *device = nil;
+    BLERemotePeerTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:kBLEPeripheralDeviceCellIdentifier forIndexPath:indexPath];
+    __block BLERemotePeer *remotePeer = nil;
     [self.readConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
-        device = [[transaction extension:self.allDevicesViewName] objectAtIndexPath:indexPath withMappings:self.mappings];
+        remotePeer = [[transaction extension:self.allDevicesViewName] objectAtIndexPath:indexPath withMappings:self.mappings];
     }];
-    [cell setDevice:device];
+    [cell setRemotePeer:remotePeer];
     return cell;
 }
 
@@ -103,12 +103,9 @@ static NSString * const kBLEPeripheralDeviceCellIdentifier = @"kBLEPeripheralDev
 
 - (void) setupMappings {
     self.readConnection = [[BLEDatabaseManager sharedInstance].database newConnection];
-    self.allDevicesViewName = [BLEDatabaseManager sharedInstance].allDevicesViewName;
+    self.allDevicesViewName = [BLEDatabaseManager sharedInstance].allRemotePeersViewName;
     self.mappings = [[YapDatabaseViewMappings alloc] initWithGroupFilterBlock:^BOOL(NSString *group, YapDatabaseReadTransaction *transaction) {
-        if ([group isEqualToString:[BLEPeripheralDevice activeGroupName]]) {
-            return YES;
-        }
-        return NO;
+        return YES;
     } sortBlock:^NSComparisonResult(NSString *group1, NSString *group2, YapDatabaseReadTransaction *transaction) {
         return [group1 compare:group2];
     } view:self.allDevicesViewName];

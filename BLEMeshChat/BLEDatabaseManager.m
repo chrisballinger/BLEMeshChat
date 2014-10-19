@@ -9,7 +9,7 @@
 #import "BLEDatabaseManager.h"
 #import "YapDatabaseView.h"
 #import "YapDatabaseViewTypes.h"
-#import "BLEPeripheralDevice.h"
+#import "BLERemotePeer.h"
 
 @implementation BLEDatabaseManager
 
@@ -30,25 +30,21 @@
 }
 
 - (void) registerViews {
-    [self registerAllDevicesView];
+    [self registerAllRemotePeersView];
 }
 
-- (void) registerAllDevicesView {
-    _allDevicesViewName = @"BLEAllDevicesView";
-    YapDatabaseViewGrouping *grouping = [YapDatabaseViewGrouping withObjectBlock:^NSString *(NSString *collection, NSString *key, BLEPeripheralDevice *device) {
-        NSTimeInterval oldnessThreshold = 60; // devices older than 60 sec are considered old
-        NSTimeInterval timeIntervalSinceNow = [device.lastSeenDate timeIntervalSinceNow];
-        if (timeIntervalSinceNow < -oldnessThreshold) {
-            return [BLEPeripheralDevice pastGroupName];
-        } else {
-            return [BLEPeripheralDevice activeGroupName];
-        }
+- (void) registerAllRemotePeersView {
+    _allRemotePeersViewName = @"BLEAllRemotePeersView";
+    YapDatabaseViewGrouping *grouping = [YapDatabaseViewGrouping withObjectBlock:^NSString *(NSString *collection, NSString *key, BLERemotePeer *remotePeer) {
+        return [remotePeer yapGroup];
     }];
-    YapDatabaseViewSorting *sorting = [YapDatabaseViewSorting withObjectBlock:^NSComparisonResult(NSString *group, NSString *collection1, NSString *key1, BLEPeripheralDevice *device1, NSString *collection2, NSString *key2, BLEPeripheralDevice *device2) {
-        return [device2.lastSeenDate compare:device1.lastSeenDate];
+    YapDatabaseViewSorting *sorting = [YapDatabaseViewSorting withObjectBlock:^NSComparisonResult(NSString *group, NSString *collection1, NSString *key1, BLERemotePeer *remotePeer1, NSString *collection2, NSString *key2, BLERemotePeer *remotePeer2) {
+        return [remotePeer2.lastSeenDate compare:remotePeer1.lastSeenDate];
     }];
     YapDatabaseView *databaseView = [[YapDatabaseView alloc] initWithGrouping:grouping sorting:sorting versionTag:[NSUUID UUID].UUIDString options:nil];
-    [self.database asyncRegisterExtension:databaseView withName:self.allDevicesViewName completionBlock:nil];
+    [self.database asyncRegisterExtension:databaseView withName:self.allRemotePeersViewName completionBlock:^(BOOL ready) {
+        DDLogInfo(@"%@ ready %d", self.allRemotePeersViewName, ready);
+    }];
 }
 
 + (instancetype) sharedInstance {

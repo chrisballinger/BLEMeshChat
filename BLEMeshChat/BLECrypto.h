@@ -18,6 +18,13 @@ typedef NS_ENUM(NSUInteger, BLEKeyType) {
 @property (nonatomic, strong, readonly) NSData *publicKey;
 @property (nonatomic, strong, readonly) NSData *privateKey;
 @property (nonatomic, readonly) BLEKeyType type;
+- (instancetype) initWithPublicKey:(NSData*)publicKey
+                        privateKey:(NSData*)privateKey
+                              type:(BLEKeyType)type;
+
+/** Generates a new key pair, only Ed25519 is supported right now. */
++ (instancetype) keyPairWithType:(BLEKeyType)type;
+
 @end
 
 @interface BLECrypto : NSObject
@@ -25,7 +32,6 @@ typedef NS_ENUM(NSUInteger, BLEKeyType) {
 + (NSData*) signatureForData:(NSData*)data privateKey:(NSData*)privateKey;
 + (BOOL) verifyData:(NSData*)data signature:(NSData*)signature publicKey:(NSData*)publicKey;
 
-+ (BLEKeyPair*) generateKeyPairWithType:(BLEKeyType)type;
 
 /*
 + (BLEKeyPair*) convertKeyPair:(BLEKeyPair*)keyPair toType:(BLEKeyType)outputType;

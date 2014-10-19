@@ -6,13 +6,16 @@
 //  Copyright (c) 2014 Christopher Ballinger. All rights reserved.
 //
 
-#import "BLEYapObject.h"
+#import "BLEMessagePacket.h"
+#import "BLEYapObjectProtocol.h"
+#import  "BLERemotePeer.h"
 
-@interface BLEMessage : BLEYapObject
+@interface BLEMessage : BLEMessagePacket <BLEYapObjectProtocol>
 
-@property (nonatomic, strong, readonly) NSString *body;
-@property (nonatomic, readonly) uint64_t timestamp;
-@property (nonatomic, strong, readonly) NSData *signature;
-@property (nonatomic, strong, readonly) NSDate *receivedDate;
+// Dynamic Properties
+/** "foreign key" to sender */
+@property (nonatomic, strong, readonly) NSString *senderYapKey;
+
+- (BLERemotePeer*) senderWithTransaction:(YapDatabaseReadTransaction*)transaction;
 
 @end
