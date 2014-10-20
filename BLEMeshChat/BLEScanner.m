@@ -29,10 +29,20 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
 
 @implementation BLEScanner
 
-- (instancetype) initWithKeyPair:(BLEKeyPair*)keyPair {
+- (instancetype) initWithIdentity:(BLEIdentityPacket*)identity
+                          keyPair:(BLEKeyPair*)keyPair
+                         delegate:(id<BLEScannerDelegate>)delegate
+                    delegateQueue:(dispatch_queue_t)delegateQueue {
     if (self = [super init]) {
         _keyPair = keyPair;
+        _identity = identity;
         _eventQueue = dispatch_queue_create("BLEScanner Event Queue", 0);
+        _delegate = delegate;
+        if (!delegateQueue) {
+            _delegateQueue = dispatch_queue_create("BLEScanner Delegate Queue", 0);
+        } else {
+            _delegateQueue = delegateQueue;
+        }
         _centralManager = [[CBCentralManager alloc] initWithDelegate:self
                                                                      queue:_eventQueue
                                                                    options:@{CBCentralManagerOptionRestoreIdentifierKey: kBLEScannerRestoreIdentifier}];
@@ -45,7 +55,7 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
 
 - (BOOL) startScanning {
     if (self.centralManager.state == CBCentralManagerStatePoweredOn) {
-        BOOL allowDuplicates = YES;
+        BOOL allowDuplicates = NO;
         NSArray *services = @[[BLEBroadcaster meshChatServiceUUID]];
         [self.centralManager scanForPeripheralsWithServices:services
                                                     options:@{CBCentralManagerScanOptionAllowDuplicatesKey: @(allowDuplicates)}];
@@ -68,26 +78,6 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
 - (void) broadcastIdentityPacket:(BLEIdentityPacket *)identityPacket {
     self.identity = identityPacket;
 }
-
-- (void) updateStatsForRemotePeerFromPeripheral:(CBPeripheral*)peripheral {
-    NSString *remotePeerYapKey = [self.primaryRemotePeerForPeripheral objectForKey:peripheral];
-    if (!remotePeerYapKey) {
-        return;
-    }
-    [[BLEDatabaseManager sharedInstance].readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
-        BLERemotePeer *remotePeer = [transaction objectForKey:remotePeerYapKey inCollection:[BLERemotePeer yapCollection]];
-        if (!remotePeer) {
-            remotePeer = [[BLERemotePeer alloc] init];
-        } else {
-            remotePeer = [remotePeer copy];
-        }
-        remotePeer.lastSeenDate = [NSDate date];
-        remotePeer.numberOfTimesSeen = remotePeer.numberOfTimesSeen + 1;
-        remotePeer.lastSeenPeripherhalUUID = peripheral.identifier.UUIDString;
-        [transaction setObject:remotePeer forKey:remotePeerYapKey inCollection:[BLERemotePeer yapCollection]];
-    }];
-}
-
 #pragma mark - CBCentralManagerDelegate methods
 
 - (void)centralManagerDidUpdateState:(CBCentralManager *)central {
@@ -172,34 +162,24 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
     } else {
         DDLogVerbose(@"%@: %@ %@", THIS_FILE, THIS_METHOD, characteristic);
         CBUUID *uuid = characteristic.UUID;
-        id<BLEYapObjectProtocol> yapObject = nil;
         if ([uuid isEqual:[BLEBroadcaster messagesReadCharacteristicUUID]]) {
             NSData *messagePacketData = characteristic.value;
-            NSError *messageParseError = nil;
-            BLEMessage *message = [[BLEMessage alloc] initWithPacketData:messagePacketData error:&messageParseError];
-            if (messageParseError) {
-                DDLogError(@"message parse error: %@", messageParseError);
-            } else {
-                yapObject = message;
+            if (messagePacketData.length) {
+                dispatch_async(self.delegateQueue, ^{
+                    [self.delegate scanner:self receivedMessagePacket:messagePacketData fromPeripheral:peripheral];
+                });
             }
             // Keep reading outgoing messages
             [peripheral readValueForCharacteristic:characteristic];
         } else if ([uuid isEqual:[BLEBroadcaster identityReadCharacteristicUUID]]) {
             NSData *identityPacketData = characteristic.value;
-            NSError *identityParseError = nil;
-            BLERemotePeer *remotePeer = [[BLERemotePeer alloc] initWithPacketData:identityPacketData error:&identityParseError];
-            if (identityParseError) {
-                DDLogError(@"identity parse error: %@", identityParseError);
-            } else {
-                yapObject = remotePeer;
+            if (identityPacketData.length) {
+                dispatch_async(self.delegateQueue, ^{
+                    [self.delegate scanner:self receivedIdentityPacket:identityPacketData fromPeripheral:peripheral];
+                });
             }
             // Keep reading outgoing identities
             [peripheral readValueForCharacteristic:characteristic];
-        }
-        if (yapObject) {
-            [[BLEDatabaseManager sharedInstance].readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
-                [transaction setObject:yapObject forKey:yapObject.yapKey inCollection:[[yapObject class] yapCollection]];
-            }];
         }
     }
 }
@@ -228,9 +208,17 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
                 [peripheral readValueForCharacteristic:characteristic];
             } else if ([uuid isEqual:[BLEBroadcaster messagesWriteCharacteristicUUID]]) {
                 // Start sending your outgoing messages
+                NSData *messagePacketData = [self.messagePacket packetData];
+                dispatch_async(self.delegateQueue, ^{
+                    [self.delegate scanner:self willWriteMessagePacket:messagePacketData toPeripheral:peripheral];
+                });
                 [peripheral writeValue:[self.messagePacket packetData] forCharacteristic:characteristic type:CBCharacteristicWriteWithResponse];
             } else if ([uuid isEqual:[BLEBroadcaster identityWriteCharacteristicUUID]]) {
                 // Start writing your outgoing identities
+                NSData *identityPacketData = [self.identity packetData];
+                dispatch_async(self.delegateQueue, ^{
+                    [self.delegate scanner:self willWriteIdentityPacket:identityPacketData toPeripheral:peripheral];
+                });
                 [peripheral writeValue:[self.identity packetData] forCharacteristic:characteristic type:CBCharacteristicWriteWithResponse];
             }
         }];

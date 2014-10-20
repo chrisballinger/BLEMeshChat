@@ -13,11 +13,14 @@
 #import "DDASLLogger.h"
 #import "BLELocalPeer.h"
 #import "BLEDatabaseManager.h"
+#import "BLETransportManager.h"
+#import "BLETransportStorage.h"
 
 static NSString * const kBLEPrimaryLocalPeerKey = @"kBLEPrimaryLocalPeerKey";
 
 @interface BLEAppDelegate ()
-
+@property (nonatomic, strong) BLETransportManager *transportManager;
+@property (nonatomic, strong) BLETransportStorage *transportStorage;
 @end
 
 @implementation BLEAppDelegate
@@ -48,6 +51,7 @@ static NSString * const kBLEPrimaryLocalPeerKey = @"kBLEPrimaryLocalPeerKey";
     }
     
     __block BLELocalPeer *localPeer = nil;
+    BLEKeyPair *keyPair = nil;
     NSString *primaryLocalPeerYapKey = [[NSUserDefaults standardUserDefaults] objectForKey:kBLEPrimaryLocalPeerKey];
     if (primaryLocalPeerYapKey) {
         [[BLEDatabaseManager sharedInstance].readWriteConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
@@ -55,15 +59,18 @@ static NSString * const kBLEPrimaryLocalPeerKey = @"kBLEPrimaryLocalPeerKey";
         }];
     }
     if (!localPeer) {
-        BLEKeyPair *keyPair = [BLEKeyPair keyPairWithType:BLEKeyTypeEd25519];
+        keyPair = [BLEKeyPair keyPairWithType:BLEKeyTypeEd25519];
         localPeer = [[BLELocalPeer alloc] initWithDisplayName:@"Test User" keyPair:keyPair];
         [[BLEDatabaseManager sharedInstance].readWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
             [transaction setObject:localPeer forKey:primaryLocalPeerYapKey inCollection:[BLELocalPeer yapCollection]];
         }];
         [[NSUserDefaults standardUserDefaults] setObject:localPeer.yapKey forKey:kBLEPrimaryLocalPeerKey];
         [[NSUserDefaults standardUserDefaults] synchronize];
+    } else {
+        keyPair = localPeer.keyPair;
     }
-    self.transportManager = [[BLETransportManager alloc] initWithKeyPair:localPeer.keyPair];
+    self.transportStorage = [[BLETransportStorage alloc] init];
+    self.transportManager = [[BLETransportManager alloc] initWithIdentity:localPeer keyPair:keyPair delegate:self.transportStorage delegateQueue:nil];
     
     UIUserNotificationSettings *notificationSettings = [UIUserNotificationSettings settingsForTypes:UIUserNotificationTypeAlert | UIUserNotificationTypeSound categories:nil];
     [[UIApplication sharedApplication] registerUserNotificationSettings:notificationSettings];

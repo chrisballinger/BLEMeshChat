@@ -12,13 +12,10 @@
 #import "BLERemotePeer.h"
 #import "BLERemotePeerTableViewCell.h"
 
-static NSString * const kBLEPeripheralDeviceCellIdentifier = @"kBLEPeripheralDeviceCellIdentifier";
-
 @interface BLEScannerViewController ()
 @property (nonatomic) BOOL hasUpdatedConstraints;
 @property (nonatomic, strong) YapDatabaseViewMappings *mappings;
 @property (nonatomic, strong) YapDatabaseConnection *readConnection;
-@property (nonatomic, strong) NSString *allDevicesViewName;
 @end
 
 @implementation BLEScannerViewController
@@ -43,7 +40,7 @@ static NSString * const kBLEPeripheralDeviceCellIdentifier = @"kBLEPeripheralDev
     self.deviceTableView.delegate = self;
     self.deviceTableView.dataSource = self;
     self.deviceTableView.rowHeight = 80.0f;
-    [self.deviceTableView registerClass:[BLERemotePeerTableViewCell class] forCellReuseIdentifier:kBLEPeripheralDeviceCellIdentifier];
+    [self.deviceTableView registerClass:[BLERemotePeerTableViewCell class] forCellReuseIdentifier:[BLERemotePeerTableViewCell cellIdentifier]];
     [self.view addSubview:self.deviceTableView];
 }
 
@@ -90,10 +87,12 @@ static NSString * const kBLEPeripheralDeviceCellIdentifier = @"kBLEPeripheralDev
 }
 
 - (UITableViewCell*) tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    BLERemotePeerTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:kBLEPeripheralDeviceCellIdentifier forIndexPath:indexPath];
+    BLERemotePeerTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:[BLERemotePeerTableViewCell cellIdentifier] forIndexPath:indexPath];
     __block BLERemotePeer *remotePeer = nil;
+    
     [self.readConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
-        remotePeer = [[transaction extension:self.allDevicesViewName] objectAtIndexPath:indexPath withMappings:self.mappings];
+        NSString *allRemotePeersViewName = [BLEDatabaseManager sharedInstance].allRemotePeersViewName;
+        remotePeer = [[transaction extension:allRemotePeersViewName] objectAtIndexPath:indexPath withMappings:self.mappings];
     }];
     [cell setRemotePeer:remotePeer];
     return cell;
@@ -103,12 +102,12 @@ static NSString * const kBLEPeripheralDeviceCellIdentifier = @"kBLEPeripheralDev
 
 - (void) setupMappings {
     self.readConnection = [[BLEDatabaseManager sharedInstance].database newConnection];
-    self.allDevicesViewName = [BLEDatabaseManager sharedInstance].allRemotePeersViewName;
+    NSString *allRemotePeersViewName = [BLEDatabaseManager sharedInstance].allRemotePeersViewName;
     self.mappings = [[YapDatabaseViewMappings alloc] initWithGroupFilterBlock:^BOOL(NSString *group, YapDatabaseReadTransaction *transaction) {
         return YES;
     } sortBlock:^NSComparisonResult(NSString *group1, NSString *group2, YapDatabaseReadTransaction *transaction) {
         return [group1 compare:group2];
-    } view:self.allDevicesViewName];
+    } view:allRemotePeersViewName];
     
     // Freeze our databaseConnection on the current commit.
     // This gives us a snapshot-in-time of the database,
@@ -163,8 +162,9 @@ static NSString * const kBLEPeripheralDeviceCellIdentifier = @"kBLEPeripheralDev
     
     NSArray *sectionChanges = nil;
     NSArray *rowChanges = nil;
-    
-    [[self.readConnection ext:self.allDevicesViewName] getSectionChanges:&sectionChanges
+    NSString *allRemotePeersViewName = [BLEDatabaseManager sharedInstance].allRemotePeersViewName;
+
+    [[self.readConnection ext:allRemotePeersViewName] getSectionChanges:&sectionChanges
                                                   rowChanges:&rowChanges
                                             forNotifications:notifications
                                                 withMappings:self.mappings];

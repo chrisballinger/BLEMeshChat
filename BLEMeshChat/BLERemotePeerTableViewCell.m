@@ -90,4 +90,8 @@
     self.connectionStateLabel.text = [NSString stringWithFormat:@"%d", (int)remotePeer.numberOfTimesSeen];
 }
 
++ (NSString*) cellIdentifier {
+    return NSStringFromClass([self class]);
+}
+
 @end

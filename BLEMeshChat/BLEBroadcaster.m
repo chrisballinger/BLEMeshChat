@@ -8,8 +8,6 @@
 
 #import "BLEBroadcaster.h"
 #import "BLECrypto.h"
-#import "BLEIdentityPacket.h"
-#import "BLEMessagePacket.h"
 
 static NSString * const kBLEBroadcasterRestoreIdentifier = @"kBLEBroadcasterRestoreIdentifier";
 
@@ -33,16 +31,25 @@ static NSString * const kBLEMessagesWriteCharacteristicUUIDString = @"6EAEC220-5
 
 @property (nonatomic, strong) BLEKeyPair *keyPair;
 @property (nonatomic, strong) BLEMessagePacket *messagePacket;
-@property (nonatomic, strong) BLEIdentityPacket *identity;
 
 @end
 
 @implementation BLEBroadcaster
 
-- (instancetype) initWithKeyPair:(BLEKeyPair*)keyPair {
+- (instancetype) initWithIdentity:(BLEIdentityPacket*)identity
+                          keyPair:(BLEKeyPair*)keyPair
+                         delegate:(id<BLEBroadcasterDelegate>)delegate
+                    delegateQueue:(dispatch_queue_t)delegateQueue {
     if (self = [super init]) {
         _keyPair = keyPair;
+        _identity = identity;
         _eventQueue = dispatch_queue_create("BLEBroadcaster Event Queue", 0);
+        if (!delegateQueue) {
+            _delegateQueue = dispatch_queue_create("BLEBroadcaster Delegate Queue", 0);
+        } else {
+            _delegateQueue = delegateQueue;
+        }
+        _delegate = delegate;
         _peripheralManager = [[CBPeripheralManager alloc] initWithDelegate:self
                                                                      queue:_eventQueue
                                                                    options:@{CBPeripheralManagerOptionRestoreIdentifierKey: kBLEBroadcasterRestoreIdentifier,
@@ -53,10 +60,6 @@ static NSString * const kBLEMessagesWriteCharacteristicUUIDString = @"6EAEC220-5
 
 - (void) broadcastMessagePacket:(BLEMessagePacket *)messagePacket {
     self.messagePacket = messagePacket;
-}
-
-- (void) broadcastIdentityPacket:(BLEIdentityPacket *)identityPacket {
-    self.identity = identityPacket;
 }
 
 - (BOOL) startBroadcasting {
@@ -193,18 +196,22 @@ static NSString * const kBLEMessagesWriteCharacteristicUUIDString = @"6EAEC220-5
     DDLogVerbose(@"%@: %@ %@", THIS_FILE, THIS_METHOD, request);
     CBUUID *requestUUID = request.characteristic.UUID;
     NSData *responseData = nil;
+    CBATTError result = CBATTErrorReadNotPermitted;
+    CBCentral *central = request.central;
     if ([requestUUID isEqual:self.messagesReadCharacteristic.UUID]) {
+        result = CBATTErrorSuccess;
         responseData = [self.messagePacket packetData];
+        dispatch_async(self.delegateQueue, ^{
+            [self.delegate broadcaster:self willWriteMessagePacket:responseData toCentral:central];
+        });
     } else if ([requestUUID isEqual:self.identityReadCharacteristic.UUID]) {
+        result = CBATTErrorSuccess;
         responseData = [self.identity packetData];
+        dispatch_async(self.delegateQueue, ^{
+            [self.delegate broadcaster:self willWriteIdentityPacket:responseData toCentral:central];
+        });
     }
-    
-    if (responseData) {
-        request.value = responseData;
-        [peripheral respondToRequest:request withResult:CBATTErrorSuccess];
-    } else {
-        [peripheral respondToRequest:request withResult:CBATTErrorReadNotPermitted];
-    }
+    [peripheral respondToRequest:request withResult:result];
 }
 
 - (void)peripheralManager:(CBPeripheralManager *)peripheral didReceiveWriteRequests:(NSArray *)requests {
@@ -212,14 +219,18 @@ static NSString * const kBLEMessagesWriteCharacteristicUUIDString = @"6EAEC220-5
     [requests enumerateObjectsUsingBlock:^(CBATTRequest *request, NSUInteger idx, BOOL *stop) {
         CBUUID *uuid = request.characteristic.UUID;
         CBATTError result = CBATTErrorWriteNotPermitted;
+        NSData *requestData = request.value;
+        CBCentral *central = request.central;
         if ([uuid isEqual:self.messagesWriteCharacteristic.UUID]) {
             result = CBATTErrorSuccess;
-            BLEMessagePacket *message = [[BLEMessagePacket alloc] initWithPacketData:request.value error:nil];
-            DDLogInfo(@"incoming message: %@", message.messageBody);
+            dispatch_async(self.delegateQueue, ^{
+                [self.delegate broadcaster:self receivedMessagePacket:requestData fromCentral:central];
+            });
         } else if ([uuid isEqual:self.identityWriteCharacteristic.UUID]) {
             result = CBATTErrorSuccess;
-            BLEIdentityPacket *identity = [[BLEIdentityPacket alloc] initWithPacketData:request.value error:nil];
-            DDLogInfo(@"incoming identity: %@", identity.displayName);
+            dispatch_async(self.delegateQueue, ^{
+                [self.delegate broadcaster:self receivedIdentityPacket:requestData fromCentral:central];
+            });
         } else {
             DDLogError(@"unrecognized write: %@", request.value);
         }

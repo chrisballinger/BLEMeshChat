@@ -12,6 +12,10 @@
 
 @interface BLEMessage : BLEMessagePacket <BLEYapObjectProtocol>
 
+//readwrite
+@property (nonatomic, strong) NSDate *lastSeenDate;
+@property (nonatomic) NSUInteger numberOfTimesSeen;
+
 // Dynamic Properties
 /** "foreign key" to sender */
 @property (nonatomic, strong, readonly) NSString *senderYapKey;

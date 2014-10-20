@@ -13,6 +13,13 @@ const NSUInteger kBLEDisplayNameLength = 35; // 35 bytes
 @implementation BLEIdentityPacket
 @dynamic displayName;
 
+- (instancetype) initWithPacketData:(NSData *)packetData error:(NSError *__autoreleasing *)error {
+    if (self = [super initWithPacketData:packetData error:error]) {
+        _displayNameData = self.payloadData;
+    }
+    return self;
+}
+
 - (instancetype) initWithDisplayName:(NSString*)displayName keyPair:(BLEKeyPair*)keyPair {
     if (!displayName) {
         displayName = @"";

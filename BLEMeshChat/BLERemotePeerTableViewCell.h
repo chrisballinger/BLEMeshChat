@@ -18,4 +18,6 @@
 
 - (void) setRemotePeer:(BLERemotePeer*)remotePeer;
 
++ (NSString*) cellIdentifier;
+
 @end

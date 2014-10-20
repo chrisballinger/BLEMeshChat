@@ -12,17 +12,36 @@
 #import "BLECrypto.h"
 #import "BLEIdentityPacket.h"
 
-@interface BLETransportManager : NSObject
+@class BLETransportManager;
+
+@protocol BLETransportManagerDelegate <NSObject>
+@required
+- (void) transportManager:(BLETransportManager*)transportManager
+   receivedIdentityPacket:(NSData*)identityPacket;
+- (void) transportManager:(BLETransportManager*)transportManager
+   willWriteIdentityPacket:(NSData*)identityPacket;
+- (void) transportManager:(BLETransportManager*)transportManager
+   receivedMessagePacket:(NSData*)messagePacket;
+- (void) transportManager:(BLETransportManager*)transportManager
+   willWriteMessagePacket:(NSData*)messagePacket;
+@end
+
+@interface BLETransportManager : NSObject <BLEBroadcasterDelegate, BLEScannerDelegate>
+
+@property (nonatomic, strong, readonly) id<BLETransportManagerDelegate> delegate;
+@property (nonatomic, readonly) dispatch_queue_t delegateQueue;
 
 @property (nonatomic, strong, readonly) BLEBroadcaster *broadcaster;
 @property (nonatomic, strong, readonly) BLEScanner *scanner;
 
-- (instancetype) initWithKeyPair:(BLEKeyPair*)keyPair;
+- (instancetype) initWithIdentity:(BLEIdentityPacket*)identity
+                          keyPair:(BLEKeyPair*)keyPair
+                         delegate:(id<BLETransportManagerDelegate>)delegate
+                    delegateQueue:(dispatch_queue_t)delegateQueue;
 
 - (void) start;
 - (void) stop;
 
 - (void) broadcastMessagePacket:(BLEMessagePacket*)messagePacket;
-- (void) broadcastIdentityPacket:(BLEIdentityPacket*)identityPacket;
 
 @end

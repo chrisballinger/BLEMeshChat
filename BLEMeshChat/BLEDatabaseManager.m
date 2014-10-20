@@ -35,8 +35,12 @@
 
 - (void) registerAllRemotePeersView {
     _allRemotePeersViewName = @"BLEAllRemotePeersView";
-    YapDatabaseViewGrouping *grouping = [YapDatabaseViewGrouping withObjectBlock:^NSString *(NSString *collection, NSString *key, BLERemotePeer *remotePeer) {
-        return [remotePeer yapGroup];
+    YapDatabaseViewGrouping *grouping = [YapDatabaseViewGrouping withObjectBlock:^NSString *(NSString *collection, NSString *key, id object) {
+        if ([object isKindOfClass:[BLERemotePeer class]]) {
+            BLERemotePeer *remotePeer = object;
+            return [remotePeer yapGroup];
+        }
+        return nil;
     }];
     YapDatabaseViewSorting *sorting = [YapDatabaseViewSorting withObjectBlock:^NSComparisonResult(NSString *group, NSString *collection1, NSString *key1, BLERemotePeer *remotePeer1, NSString *collection2, NSString *key2, BLERemotePeer *remotePeer2) {
         return [remotePeer2.lastSeenDate compare:remotePeer1.lastSeenDate];
