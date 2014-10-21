@@ -45,7 +45,7 @@
         return nil;
     }];
     YapDatabaseViewSorting *sorting = [YapDatabaseViewSorting withObjectBlock:^NSComparisonResult(NSString *group, NSString *collection1, NSString *key1, BLERemotePeer *remotePeer1, NSString *collection2, NSString *key2, BLERemotePeer *remotePeer2) {
-        return [remotePeer2.lastSeenDate compare:remotePeer1.lastSeenDate];
+        return [remotePeer2.lastReceivedDate compare:remotePeer1.lastReceivedDate];
     }];
     YapDatabaseView *databaseView = [[YapDatabaseView alloc] initWithGrouping:grouping sorting:sorting versionTag:[NSUUID UUID].UUIDString options:nil];
     [self.database asyncRegisterExtension:databaseView withName:self.allRemotePeersViewName completionBlock:^(BOOL ready) {
@@ -62,7 +62,7 @@
         return nil;
     }];
     YapDatabaseViewSorting *sorting = [YapDatabaseViewSorting withObjectBlock:^NSComparisonResult(NSString *group, NSString *collection1, NSString *key1, BLEMessage *message1, NSString *collection2, NSString *key2, BLEMessage *message2) {
-        return [message2.lastSeenDate compare:message1.lastSeenDate];
+        return [message2.lastReceivedDate compare:message1.lastReceivedDate];
     }];
     YapDatabaseView *databaseView = [[YapDatabaseView alloc] initWithGrouping:grouping sorting:sorting versionTag:[NSUUID UUID].UUIDString options:nil];
     [self.database asyncRegisterExtension:databaseView withName:self.allMessagesViewName completionBlock:^(BOOL ready) {

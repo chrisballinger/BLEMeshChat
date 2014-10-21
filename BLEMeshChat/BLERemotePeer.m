@@ -14,7 +14,8 @@ static const
 @end
 
 @implementation BLERemotePeer
-@synthesize lastSeenDate;
+@synthesize lastReceivedDate;
+@synthesize lastBroadcastDate;
 @synthesize numberOfTimesReceived;
 @synthesize numberOfTimesBroadcast;
 

@@ -11,7 +11,9 @@
 @protocol BLETransportStats <NSObject>
 @required
 
-@property (nonatomic, strong) NSDate *lastSeenDate;
+@property (nonatomic, strong) NSDate *lastReceivedDate;
+@property (nonatomic, strong) NSDate *lastBroadcastDate;
+
 @property (nonatomic) NSUInteger numberOfTimesReceived;
 @property (nonatomic) NSUInteger numberOfTimesBroadcast;
 

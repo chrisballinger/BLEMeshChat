@@ -30,23 +30,11 @@ static NSString * const kBLEPrimaryLocalPeerKey = @"kBLEPrimaryLocalPeerKey";
     [DDLog addLogger:[DDASLLogger sharedInstance]];
     NSArray *centralManagerIdentifiers = launchOptions[UIApplicationLaunchOptionsBluetoothCentralsKey];
     if (centralManagerIdentifiers) {
-        DDLogInfo(@"didFinishLaunchingWithOptions with UIApplicationLaunchOptionsBluetoothCentralsKey");
+        DDLogInfo(@"didFinishLaunchingWithOptions with UIApplicationLaunchOptionsBluetoothCentralsKey %@", centralManagerIdentifiers);
     }
     NSArray *peripheralManagerIdentifiers = launchOptions[UIApplicationLaunchOptionsBluetoothPeripheralsKey];
     if (peripheralManagerIdentifiers) {
-        DDLogInfo(@"didFinishLaunchingWithOptions with UIApplicationLaunchOptionsBluetoothPeripheralsKey");
-    }
-    if (centralManagerIdentifiers || peripheralManagerIdentifiers) {
-        NSMutableString *body = [NSMutableString stringWithString:@"Launched with "];
-        if (centralManagerIdentifiers) {
-            [body appendString:@"central "];
-        }
-        if (peripheralManagerIdentifiers) {
-            [body appendString:@"peripheral "];
-        }
-        UILocalNotification *localNotification = [[UILocalNotification alloc] init];
-        localNotification.alertBody = body;
-        [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
+        DDLogInfo(@"didFinishLaunchingWithOptions with UIApplicationLaunchOptionsBluetoothPeripheralsKey %@", peripheralManagerIdentifiers);
     }
     
     __block BLELocalPeer *localPeer = nil;

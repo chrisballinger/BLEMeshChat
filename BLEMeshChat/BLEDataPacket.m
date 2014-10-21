@@ -33,6 +33,15 @@ const NSUInteger kBLEDataPacketSenderPublicKeyOffset = kBLEDataPacketTimestampOf
             }
             return nil;
         }
+        BOOL validSig = [self hasValidSignature];
+#warning Disabling Signature Verification
+        validSig = YES;
+        if (!validSig) {
+            if (error) {
+                *error = [NSError errorWithDomain:@"BLEDataPacketParseError" code:101 userInfo:@{NSLocalizedDescriptionKey: @"Packet data has invalid signature"}];
+            }
+            return nil;
+        }
     }
     return self;
 }

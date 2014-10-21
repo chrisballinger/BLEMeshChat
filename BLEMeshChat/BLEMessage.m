@@ -9,7 +9,8 @@
 #import "BLEMessage.h"
 
 @implementation BLEMessage
-@synthesize lastSeenDate;
+@synthesize lastReceivedDate;
+@synthesize lastBroadcastDate;
 @synthesize numberOfTimesReceived;
 @synthesize numberOfTimesBroadcast;
 @dynamic senderYapKey;

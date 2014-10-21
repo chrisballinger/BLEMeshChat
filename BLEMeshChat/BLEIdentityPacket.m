@@ -35,6 +35,7 @@ const NSUInteger kBLEDisplayNameLength = 35; // 35 bytes
 
 - (NSString*) displayName {
     NSString *displayName = [[NSString alloc] initWithData:self.displayNameData encoding:NSUTF8StringEncoding];
+    displayName = [displayName stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
     return displayName;
 }
 
