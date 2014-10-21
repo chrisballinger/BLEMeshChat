@@ -60,6 +60,7 @@ const NSUInteger kBLEMessageBodyLength = 140;
         return @"";
     }
     NSString *messageBody = [[NSString alloc] initWithData:self.messageBodyData encoding:NSUTF8StringEncoding];
+    messageBody = [messageBody stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
     return messageBody;
 }
 

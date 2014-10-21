@@ -10,10 +10,16 @@
 #import "BLEMessage.h"
 #import "BLEDatabaseManager.h"
 #import "JSQMessagesTimestampFormatter.h"
+#import "JSQMessagesAvatarImageFactory.h"
+#import "JSQMessagesBubbleImageFactory.h"
+#import "UIColor+JSQMessages.h"
 
 @interface BLEMessagesViewController()
 @property (nonatomic, strong, readonly) YapDatabaseConnection *readConnection;
 @property (nonatomic, strong, readonly) YapDatabaseViewMappings *mappings;
+
+@property (strong, nonatomic, readonly) JSQMessagesBubbleImage *outgoingBubbleImageData;
+@property (strong, nonatomic, readonly) JSQMessagesBubbleImage *incomingBubbleImageData;
 @end
 
 @implementation BLEMessagesViewController
@@ -32,6 +38,11 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    
+    JSQMessagesBubbleImageFactory *bubbleFactory = [[JSQMessagesBubbleImageFactory alloc] init];
+    
+    _outgoingBubbleImageData = [bubbleFactory outgoingMessagesBubbleImageWithColor:[UIColor jsq_messageBubbleLightGrayColor]];
+    _incomingBubbleImageData = [bubbleFactory incomingMessagesBubbleImageWithColor:[UIColor jsq_messageBubbleGreenColor]];
     
     
     self.collectionView.collectionViewLayout.incomingAvatarViewSize = CGSizeZero;
@@ -128,7 +139,13 @@
 
 - (id<JSQMessageBubbleImageDataSource>)collectionView:(JSQMessagesCollectionView *)collectionView messageBubbleImageDataForItemAtIndexPath:(NSIndexPath *)indexPath
 {
-    return nil;
+    BLEMessage *message = [self messageForIndexPath:indexPath];
+    
+    if ([message.senderId isEqualToString:self.senderId]) {
+        return self.outgoingBubbleImageData;
+    }
+    
+    return self.incomingBubbleImageData;
 }
 
 - (id<JSQMessageAvatarImageDataSource>)collectionView:(JSQMessagesCollectionView *)collectionView avatarImageDataForItemAtIndexPath:(NSIndexPath *)indexPath
@@ -222,6 +239,7 @@
     
     cell.textView.linkTextAttributes = @{ NSForegroundColorAttributeName : cell.textView.textColor,
                                           NSUnderlineStyleAttributeName : @(NSUnderlineStyleSingle | NSUnderlinePatternSolid) };
+    cell.textView.text = msg.messageBody;
     
     return cell;
 }
@@ -337,6 +355,8 @@
                                              selector:@selector(yapDatabaseModified:)
                                                  name:YapDatabaseModifiedNotification
                                                object:self.readConnection.database];
+    
+    [self.collectionView reloadData];
 }
 
 - (void)yapDatabaseModified:(NSNotification *)notification
