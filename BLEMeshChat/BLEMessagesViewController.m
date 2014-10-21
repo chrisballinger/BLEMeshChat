@@ -14,7 +14,7 @@
 #import "JSQMessagesBubbleImageFactory.h"
 #import "UIColor+JSQMessages.h"
 #import "BLERemotePeerTableViewController.h"
-
+#import "IASKAppSettingsViewController.h"
 
 @interface BLEMessagesViewController()
 @property (nonatomic, strong, readonly) YapDatabaseConnection *readConnection;
@@ -68,7 +68,7 @@
 }
 
 - (void) profileButtonPressed:(id)sender {
-    UIViewController *profileVC = [[UIViewController alloc] init];
+    IASKAppSettingsViewController *profileVC = [[IASKAppSettingsViewController alloc] init];
     profileVC.title = NSLocalizedString(@"Profile", nil);
     [self.navigationController pushViewController:profileVC animated:YES];
 }

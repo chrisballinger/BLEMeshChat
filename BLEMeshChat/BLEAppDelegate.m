@@ -56,10 +56,20 @@ static NSString * const kBLEPrimaryLocalPeerKey = @"kBLEPrimaryLocalPeerKey";
         [[BLEDatabaseManager sharedInstance].readWriteConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
             localPeer = [transaction objectForKey:primaryLocalPeerYapKey inCollection:[BLELocalPeer yapCollection]];
         }];
+        if (localPeer) {
+            keyPair = localPeer.keyPair;
+        }
     }
-    if (!localPeer) {
-        keyPair = [BLEKeyPair keyPairWithType:BLEKeyTypeEd25519];
-        localPeer = [[BLELocalPeer alloc] initWithDisplayName:@"Test User" keyPair:keyPair];
+    NSString *publicName = [[NSUserDefaults standardUserDefaults] objectForKey:@"kBLEPublicNameKey"];
+    
+    if (!localPeer || (localPeer && ![localPeer.displayName isEqualToString:publicName])) {
+        if (publicName.length == 0) {
+            publicName = NSLocalizedString(@"Test User", nil);
+        }
+        if (!keyPair) {
+            keyPair = [BLEKeyPair keyPairWithType:BLEKeyTypeEd25519];
+        }
+        localPeer = [[BLELocalPeer alloc] initWithDisplayName:publicName keyPair:keyPair];
         [[BLEDatabaseManager sharedInstance].readWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
             [transaction setObject:localPeer forKey:primaryLocalPeerYapKey inCollection:[BLELocalPeer yapCollection]];
         }];
