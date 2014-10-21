@@ -10,7 +10,8 @@
 
 @implementation BLEMessage
 @synthesize lastSeenDate;
-@synthesize numberOfTimesSeen;
+@synthesize numberOfTimesReceived;
+@synthesize numberOfTimesBroadcast;
 @dynamic senderYapKey;
 
 + (NSString*) yapCollection {

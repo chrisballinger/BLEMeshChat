@@ -8,10 +8,10 @@
 
 #import "BLEIdentityPacket.h"
 #import "BLEYapObjectProtocol.h"
-#import "BLEObservableProtocol.h"
+#import "BLETransportStats.h"
 
 
-@interface BLERemotePeer : BLEIdentityPacket <BLEYapObjectProtocol, BLEObservableProtocol>
+@interface BLERemotePeer : BLEIdentityPacket <BLEYapObjectProtocol, BLETransportStats>
 
 @property (nonatomic) BOOL isLocallyVerified;
 

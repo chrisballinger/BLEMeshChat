@@ -1,5 +1,5 @@
 //
-//  BLEObservableProtocol.h
+//  BLETransportStats.h
 //  BLEMeshChat
 //
 //  Created by Christopher Ballinger on 10/20/14.
@@ -8,10 +8,12 @@
 
 #import <Foundation/Foundation.h>
 
-@protocol BLEObservableProtocol <NSObject>
+@protocol BLETransportStats <NSObject>
 @required
 
 @property (nonatomic, strong) NSDate *lastSeenDate;
-@property (nonatomic) NSUInteger numberOfTimesSeen;
+@property (nonatomic) NSUInteger numberOfTimesReceived;
+@property (nonatomic) NSUInteger numberOfTimesBroadcast;
+
 
 @end

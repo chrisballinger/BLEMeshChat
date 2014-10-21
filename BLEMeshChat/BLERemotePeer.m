@@ -15,7 +15,8 @@ static const
 
 @implementation BLERemotePeer
 @synthesize lastSeenDate;
-@synthesize numberOfTimesSeen;
+@synthesize numberOfTimesReceived;
+@synthesize numberOfTimesBroadcast;
 
 + (NSString*) yapCollection {
     return NSStringFromClass([self class]);

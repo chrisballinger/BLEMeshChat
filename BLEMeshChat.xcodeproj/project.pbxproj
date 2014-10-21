@@ -58,7 +58,7 @@
 		D92B37E419EA8AE40047AB38 /* UIViewController+BLE.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIViewController+BLE.m"; sourceTree = "<group>"; };
 		D92B37E619EA918C0047AB38 /* BLERemotePeerTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLERemotePeerTableViewCell.h; sourceTree = "<group>"; };
 		D92B37E719EA918C0047AB38 /* BLERemotePeerTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLERemotePeerTableViewCell.m; sourceTree = "<group>"; };
-		D931878E19F5D46B000D2F8A /* BLEObservableProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLEObservableProtocol.h; sourceTree = "<group>"; };
+		D931878E19F5D46B000D2F8A /* BLETransportStats.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLETransportStats.h; sourceTree = "<group>"; };
 		D931879019F6393F000D2F8A /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
 		D97B7B9719F5D3C2000E1B8B /* BLERemotePeerTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLERemotePeerTableViewController.h; sourceTree = "<group>"; };
 		D97B7B9819F5D3C2000E1B8B /* BLERemotePeerTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLERemotePeerTableViewController.m; sourceTree = "<group>"; };
@@ -148,7 +148,7 @@
 			isa = PBXGroup;
 			children = (
 				D9D828E319F2F71C004266F6 /* BLEYapObjectProtocol.h */,
-				D931878E19F5D46B000D2F8A /* BLEObservableProtocol.h */,
+				D931878E19F5D46B000D2F8A /* BLETransportStats.h */,
 				D99FEAA819EF3E0F003AE5CF /* BLELocalPeer.h */,
 				D99FEAA919EF3E0F003AE5CF /* BLELocalPeer.m */,
 				D90CF5E319EC8D2E006222AB /* BLERemotePeer.h */,

@@ -7,7 +7,6 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "BLEObservableProtocol.h"
 #import "BLEYapObjectProtocol.h"
 
 @class BLERemotePeer;

@@ -80,7 +80,7 @@
     NSString *lastSeenString = NSLocalizedString(@"Last seen", nil);
     
     self.lastSeenDateLabel.text = [NSString stringWithFormat:@"%@ %@", lastSeenString, [self.timeFormatter stringForTimeIntervalFromDate:[NSDate date] toDate:remotePeer.lastSeenDate]];
-    self.observationCountLabel.text = [NSString stringWithFormat:@"%d", (int)remotePeer.numberOfTimesSeen];
+    self.observationCountLabel.text = [NSString stringWithFormat:@"%d", (int)remotePeer.numberOfTimesReceived];
 }
 
 + (NSString*) cellIdentifier {

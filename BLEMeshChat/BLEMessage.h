@@ -9,10 +9,10 @@
 #import "BLEMessagePacket.h"
 #import "BLEYapObjectProtocol.h"
 #import "BLERemotePeer.h"
-#import "BLEObservableProtocol.h"
+#import "BLETransportStats.h"
 #import "JSQMessageData.h"
 
-@interface BLEMessage : BLEMessagePacket <BLEYapObjectProtocol, BLEObservableProtocol, JSQMessageData>
+@interface BLEMessage : BLEMessagePacket <BLEYapObjectProtocol, BLETransportStats, JSQMessageData>
 
 // Dynamic Properties
 /** "foreign key" to sender */

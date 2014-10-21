@@ -31,7 +31,7 @@
                 remotePeer = incomingPeer;
             }
             remotePeer.lastSeenDate = [NSDate date];
-            remotePeer.numberOfTimesSeen = remotePeer.numberOfTimesSeen + 1;
+            remotePeer.numberOfTimesReceived = remotePeer.numberOfTimesReceived + 1;
             [transaction setObject:remotePeer forKey:key inCollection:collection];
         }];
     }
@@ -55,7 +55,7 @@
                 message = incomingMessage;
             }
             message.lastSeenDate = [NSDate date];
-            message.numberOfTimesSeen = message.numberOfTimesSeen + 1;
+            message.numberOfTimesReceived = message.numberOfTimesReceived + 1;
             [transaction setObject:message forKey:key inCollection:collection];
         }];
     }
