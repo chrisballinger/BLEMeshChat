@@ -15,7 +15,7 @@
 
 //@property (nonatomic, strong, readonly) NSString *allLocalPeersViewName;
 @property (nonatomic, strong, readonly) NSString *allRemotePeersViewName;
-//@property (nonatomic, strong, readonly) NSString *allMessagesViewName;
+@property (nonatomic, strong, readonly) NSString *allMessagesViewName;
 
 + (instancetype) sharedInstance;
 

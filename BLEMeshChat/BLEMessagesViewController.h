@@ -7,7 +7,10 @@
 //
 
 #import "JSQMessagesViewController.h"
+#import "BLELocalPeer.h"
 
-@interface BLEMessagesViewController : JSQMessagesViewController
+@interface BLEMessagesViewController : JSQMessagesViewController <UIActionSheetDelegate>
+
+@property (nonatomic, strong) BLELocalPeer *localPeer;
 
 @end

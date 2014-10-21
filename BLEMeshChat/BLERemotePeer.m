@@ -14,6 +14,8 @@ static const
 @end
 
 @implementation BLERemotePeer
+@synthesize lastSeenDate;
+@synthesize numberOfTimesSeen;
 
 + (NSString*) yapCollection {
     return NSStringFromClass([self class]);
@@ -24,21 +26,7 @@ static const
 }
 
 - (NSString*) yapGroup {
-    if (self.isLocallyVerified) {
-        return [[self class] verifiedGroupName];
-    } else {
-        return [[self class] unverifiedGroupName];
-    }
+    return @"all";
 }
-
-+ (NSString*) verifiedGroupName {
-    return @"verified";
-    
-}
-
-+ (NSString*) unverifiedGroupName {
-    return @"unverified";
-}
-
 
 @end

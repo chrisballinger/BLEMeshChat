@@ -55,7 +55,7 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
 
 - (BOOL) startScanning {
     if (self.centralManager.state == CBCentralManagerStatePoweredOn) {
-        BOOL allowDuplicates = NO;
+        BOOL allowDuplicates = YES;
         NSArray *services = @[[BLEBroadcaster meshChatServiceUUID]];
         [self.centralManager scanForPeripheralsWithServices:services
                                                     options:@{CBCentralManagerScanOptionAllowDuplicatesKey: @(allowDuplicates)}];

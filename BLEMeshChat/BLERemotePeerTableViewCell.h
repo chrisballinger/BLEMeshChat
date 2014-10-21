@@ -7,14 +7,16 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "BLERemotePeer.h"
+#import "BLEObservableProtocol.h"
+#import "BLEYapObjectProtocol.h"
+
+@class BLERemotePeer;
 
 @interface BLERemotePeerTableViewCell : UITableViewCell
 
 @property (nonatomic, strong, readonly) UILabel *displayNameLabel;
-@property (nonatomic, strong, readonly) UILabel *signalStrengthLabel;
 @property (nonatomic, strong, readonly) UILabel *lastSeenDateLabel;
-@property (nonatomic, strong, readonly) UILabel *connectionStateLabel;
+@property (nonatomic, strong, readonly) UILabel *observationCountLabel;
 
 - (void) setRemotePeer:(BLERemotePeer*)remotePeer;
 

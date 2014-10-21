@@ -1,47 +1,48 @@
 //
-//  BLEScannerViewController.m
+//  BLEYapObjectTableViewController.m
 //  BLEMeshChat
 //
 //  Created by Christopher Ballinger on 10/11/14.
 //  Copyright (c) 2014 Christopher Ballinger. All rights reserved.
 //
 
-#import "BLEScannerViewController.h"
+#import "BLERemotePeerTableViewController.h"
 #import "BLEScanner.h"
-#import "BLEDatabaseManager.h"
 #import "BLERemotePeer.h"
 #import "BLERemotePeerTableViewCell.h"
+#import "BLEDatabaseManager.h"
 
-@interface BLEScannerViewController ()
+@interface BLERemotePeerTableViewController ()
 @property (nonatomic) BOOL hasUpdatedConstraints;
 @property (nonatomic, strong) YapDatabaseViewMappings *mappings;
 @property (nonatomic, strong) YapDatabaseConnection *readConnection;
+@property (nonatomic, strong, readonly) NSString *yapViewName;
 @end
 
-@implementation BLEScannerViewController
+@implementation BLERemotePeerTableViewController
 
-- (instancetype) init {
+- (instancetype) initWithYapView:(NSString*)yapViewName {
     if (self = [super init]) {
-        self.title = NSLocalizedString(@"Scan", nil);
+        _yapViewName = yapViewName;
     }
     return self;
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    [self setupDeviceTableView];
+    [self setupYapObjectTableView];
     [self setupMappings];
     [self.view updateConstraintsIfNeeded]; // why is this needed?
 }
 
-- (void) setupDeviceTableView {
-    _deviceTableView = [[UITableView alloc] init];
-    self.deviceTableView.translatesAutoresizingMaskIntoConstraints = NO;
-    self.deviceTableView.delegate = self;
-    self.deviceTableView.dataSource = self;
-    self.deviceTableView.rowHeight = 80.0f;
-    [self.deviceTableView registerClass:[BLERemotePeerTableViewCell class] forCellReuseIdentifier:[BLERemotePeerTableViewCell cellIdentifier]];
-    [self.view addSubview:self.deviceTableView];
+- (void) setupYapObjectTableView {
+    _yapObjectTableView = [[UITableView alloc] init];
+    self.yapObjectTableView.translatesAutoresizingMaskIntoConstraints = NO;
+    self.yapObjectTableView.delegate = self;
+    self.yapObjectTableView.dataSource = self;
+    self.yapObjectTableView.rowHeight = 80.0f;
+    [self.yapObjectTableView registerClass:[BLERemotePeerTableViewCell class] forCellReuseIdentifier:[BLERemotePeerTableViewCell cellIdentifier]];
+    [self.view addSubview:self.yapObjectTableView];
 }
 
 - (void) updateViewConstraints {
@@ -49,7 +50,7 @@
     if (self.hasUpdatedConstraints) {
         return;
     }
-    [self.deviceTableView autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsZero];
+    [self.yapObjectTableView autoPinEdgesToSuperviewEdgesWithInsets:UIEdgeInsetsZero];
     self.hasUpdatedConstraints = YES;
 }
 
@@ -79,9 +80,9 @@
 
 - (NSString*) tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
     if (section == 0) {
-        return @"Active";
+        return NSLocalizedString(@"Active", nil);
     } else if (section == 1) {
-        return @"History";
+        return NSLocalizedString(@"History", nil);
     }
     return @"";
 }
@@ -91,8 +92,7 @@
     __block BLERemotePeer *remotePeer = nil;
     
     [self.readConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
-        NSString *allRemotePeersViewName = [BLEDatabaseManager sharedInstance].allRemotePeersViewName;
-        remotePeer = [[transaction extension:allRemotePeersViewName] objectAtIndexPath:indexPath withMappings:self.mappings];
+        remotePeer = [[transaction extension:self.yapViewName] objectAtIndexPath:indexPath withMappings:self.mappings];
     }];
     [cell setRemotePeer:remotePeer];
     return cell;
@@ -102,12 +102,11 @@
 
 - (void) setupMappings {
     self.readConnection = [[BLEDatabaseManager sharedInstance].database newConnection];
-    NSString *allRemotePeersViewName = [BLEDatabaseManager sharedInstance].allRemotePeersViewName;
     self.mappings = [[YapDatabaseViewMappings alloc] initWithGroupFilterBlock:^BOOL(NSString *group, YapDatabaseReadTransaction *transaction) {
         return YES;
     } sortBlock:^NSComparisonResult(NSString *group1, NSString *group2, YapDatabaseReadTransaction *transaction) {
         return [group1 compare:group2];
-    } view:allRemotePeersViewName];
+    } view:self.yapViewName];
     
     // Freeze our databaseConnection on the current commit.
     // This gives us a snapshot-in-time of the database,
@@ -162,9 +161,8 @@
     
     NSArray *sectionChanges = nil;
     NSArray *rowChanges = nil;
-    NSString *allRemotePeersViewName = [BLEDatabaseManager sharedInstance].allRemotePeersViewName;
 
-    [[self.readConnection ext:allRemotePeersViewName] getSectionChanges:&sectionChanges
+    [[self.readConnection ext:self.yapViewName] getSectionChanges:&sectionChanges
                                                   rowChanges:&rowChanges
                                             forNotifications:notifications
                                                 withMappings:self.mappings];
@@ -178,7 +176,7 @@
         return;
     }
     
-    [self.deviceTableView beginUpdates];
+    [self.yapObjectTableView beginUpdates];
     
     for (YapDatabaseViewSectionChange *sectionChange in sectionChanges)
     {
@@ -186,13 +184,13 @@
         {
             case YapDatabaseViewChangeDelete :
             {
-                [self.deviceTableView deleteSections:[NSIndexSet indexSetWithIndex:sectionChange.index]
+                [self.yapObjectTableView deleteSections:[NSIndexSet indexSetWithIndex:sectionChange.index]
                               withRowAnimation:UITableViewRowAnimationAutomatic];
                 break;
             }
             case YapDatabaseViewChangeInsert :
             {
-                [self.deviceTableView insertSections:[NSIndexSet indexSetWithIndex:sectionChange.index]
+                [self.yapObjectTableView insertSections:[NSIndexSet indexSetWithIndex:sectionChange.index]
                               withRowAnimation:UITableViewRowAnimationAutomatic];
                 break;
             }
@@ -213,34 +211,34 @@
         {
             case YapDatabaseViewChangeDelete :
             {
-                [self.deviceTableView deleteRowsAtIndexPaths:@[ rowChange.indexPath ]
+                [self.yapObjectTableView deleteRowsAtIndexPaths:@[ rowChange.indexPath ]
                                       withRowAnimation:UITableViewRowAnimationAutomatic];
                 break;
             }
             case YapDatabaseViewChangeInsert :
             {
-                [self.deviceTableView insertRowsAtIndexPaths:@[ rowChange.newIndexPath ]
+                [self.yapObjectTableView insertRowsAtIndexPaths:@[ rowChange.newIndexPath ]
                                       withRowAnimation:UITableViewRowAnimationAutomatic];
                 break;
             }
             case YapDatabaseViewChangeMove :
             {
-                [self.deviceTableView deleteRowsAtIndexPaths:@[ rowChange.indexPath ]
+                [self.yapObjectTableView deleteRowsAtIndexPaths:@[ rowChange.indexPath ]
                                       withRowAnimation:UITableViewRowAnimationAutomatic];
-                [self.deviceTableView insertRowsAtIndexPaths:@[ rowChange.newIndexPath ]
+                [self.yapObjectTableView insertRowsAtIndexPaths:@[ rowChange.newIndexPath ]
                                       withRowAnimation:UITableViewRowAnimationAutomatic];
                 break;
             }
             case YapDatabaseViewChangeUpdate :
             {
-                [self.deviceTableView reloadRowsAtIndexPaths:@[ rowChange.indexPath ]
+                [self.yapObjectTableView reloadRowsAtIndexPaths:@[ rowChange.indexPath ]
                                       withRowAnimation:UITableViewRowAnimationNone];
                 break;
             }
         }
     }
     
-    [self.deviceTableView endUpdates];
+    [self.yapObjectTableView endUpdates];
 }
 
 @end

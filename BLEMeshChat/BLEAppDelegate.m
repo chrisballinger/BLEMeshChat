@@ -7,8 +7,8 @@
 //
 
 #import "BLEAppDelegate.h"
-#import "BLEBroadcastViewController.h"
-#import "BLEScannerViewController.h"
+#import "BLERemotePeerTableViewController.h"
+#import "BLEMessagesViewController.h"
 #import "DDTTYLogger.h"
 #import "DDASLLogger.h"
 #import "BLELocalPeer.h"
@@ -76,14 +76,27 @@ static NSString * const kBLEPrimaryLocalPeerKey = @"kBLEPrimaryLocalPeerKey";
     [[UIApplication sharedApplication] registerUserNotificationSettings:notificationSettings];
     
     self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+    
+    
+    BLEMessagesViewController *chatVC = [BLEMessagesViewController messagesViewController];
+    chatVC.localPeer = localPeer;
+    UINavigationController *chatNav = [[UINavigationController alloc] initWithRootViewController:chatVC];
+    chatVC.title = NSLocalizedString(@"Chat", nil);
+    chatNav.tabBarItem.image = [UIImage imageNamed:@"BLEChatIcon"];
+    
+    BLERemotePeerTableViewController *peersVC = [[BLERemotePeerTableViewController alloc] initWithYapView:[BLEDatabaseManager sharedInstance].allRemotePeersViewName];
+    UINavigationController *peersNav = [[UINavigationController alloc] initWithRootViewController:peersVC];
+    peersVC.title = NSLocalizedString(@"Peers", nil);
+    peersNav.tabBarItem.image = [UIImage imageNamed:@"BLEGroupIcon"];
+    
+    UIViewController *profileVC = [[UIViewController alloc] init];
+    UINavigationController *profileNav = [[UINavigationController alloc] initWithRootViewController:profileVC];
+    profileVC.title = NSLocalizedString(@"Profile", nil);
+    profileNav.tabBarItem.image = [UIImage imageNamed:@"BLEUserProfileIcon"];
+    
+    
     UITabBarController *tabBarController = [[UITabBarController alloc] init];
-    BLEScannerViewController *scannerVC = [[BLEScannerViewController alloc] init];
-    UINavigationController *scannerNav = [[UINavigationController alloc] initWithRootViewController:scannerVC];
-    scannerNav.tabBarItem.image = [UIImage imageNamed:@"BLEScanIcon"];
-    BLEBroadcastViewController *broadcastVC = [[BLEBroadcastViewController alloc] init];
-    UINavigationController *broadcastNav = [[UINavigationController alloc] initWithRootViewController:broadcastVC];
-    broadcastNav.tabBarItem.image = [UIImage imageNamed:@"BLEBroadcastIcon"];
-    tabBarController.viewControllers = @[scannerNav, broadcastNav];
+    tabBarController.viewControllers = @[chatNav, peersNav, profileNav];
     self.window.rootViewController = tabBarController;
     [self.window makeKeyAndVisible];
     return YES;

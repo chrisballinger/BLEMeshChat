@@ -8,16 +8,11 @@
 
 #import "BLEIdentityPacket.h"
 #import "BLEYapObjectProtocol.h"
+#import "BLEObservableProtocol.h"
 
 
-@interface BLERemotePeer : BLEIdentityPacket <BLEYapObjectProtocol>
-
-@property (nonatomic, strong) NSDate *lastSeenDate;
-@property (nonatomic) NSUInteger numberOfTimesSeen;
+@interface BLERemotePeer : BLEIdentityPacket <BLEYapObjectProtocol, BLEObservableProtocol>
 
 @property (nonatomic) BOOL isLocallyVerified;
-
-+ (NSString*) verifiedGroupName;
-+ (NSString*) unverifiedGroupName;
 
 @end

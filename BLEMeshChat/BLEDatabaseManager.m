@@ -10,6 +10,7 @@
 #import "YapDatabaseView.h"
 #import "YapDatabaseViewTypes.h"
 #import "BLERemotePeer.h"
+#import "BLEMessage.h"
 
 @implementation BLEDatabaseManager
 
@@ -31,6 +32,7 @@
 
 - (void) registerViews {
     [self registerAllRemotePeersView];
+    [self registerAllMessagesView];
 }
 
 - (void) registerAllRemotePeersView {
@@ -50,6 +52,25 @@
         DDLogInfo(@"%@ ready %d", self.allRemotePeersViewName, ready);
     }];
 }
+
+- (void) registerAllMessagesView {
+    _allMessagesViewName = @"BLEAllMessagesView";
+    YapDatabaseViewGrouping *grouping = [YapDatabaseViewGrouping withObjectBlock:^NSString *(NSString *collection, NSString *key, id object) {
+        if ([object isKindOfClass:[BLEMessage class]]) {
+            BLEMessage *message = object;
+            return [message yapGroup];
+        }
+        return nil;
+    }];
+    YapDatabaseViewSorting *sorting = [YapDatabaseViewSorting withObjectBlock:^NSComparisonResult(NSString *group, NSString *collection1, NSString *key1, BLEMessage *message1, NSString *collection2, NSString *key2, BLEMessage *message2) {
+        return [message2.lastSeenDate compare:message1.lastSeenDate];
+    }];
+    YapDatabaseView *databaseView = [[YapDatabaseView alloc] initWithGrouping:grouping sorting:sorting versionTag:[NSUUID UUID].UUIDString options:nil];
+    [self.database asyncRegisterExtension:databaseView withName:self.allMessagesViewName completionBlock:^(BOOL ready) {
+        DDLogInfo(@"%@ ready %d", self.allMessagesViewName, ready);
+    }];
+}
+
 
 + (instancetype) sharedInstance {
     static id _sharedInstance = nil;

@@ -8,13 +8,11 @@
 
 #import "BLEMessagePacket.h"
 #import "BLEYapObjectProtocol.h"
-#import  "BLERemotePeer.h"
+#import "BLERemotePeer.h"
+#import "BLEObservableProtocol.h"
+#import "JSQMessageData.h"
 
-@interface BLEMessage : BLEMessagePacket <BLEYapObjectProtocol>
-
-//readwrite
-@property (nonatomic, strong) NSDate *lastSeenDate;
-@property (nonatomic) NSUInteger numberOfTimesSeen;
+@interface BLEMessage : BLEMessagePacket <BLEYapObjectProtocol, BLEObservableProtocol, JSQMessageData>
 
 // Dynamic Properties
 /** "foreign key" to sender */

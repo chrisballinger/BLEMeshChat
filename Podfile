@@ -5,9 +5,7 @@ source 'https://github.com/CocoaPods/Specs.git'
 pod 'YapDatabase', '~> 2.5'
 pod 'PureLayout', '~> 1.1'
 pod 'Mantle', '~> 1.4'
-#pod 'libsodium', '~> 1.0'
 pod 'JSQMessagesViewController', '6.0-beta5'
-
-#podspec :path => 'Podspecs/libsodium.podspec.json'
+pod 'FormatterKit/TimeIntervalFormatter', '~> 1.6'
 
 pod 'libsodium', :podspec => 'Podspecs/libsodium.podspec.json'

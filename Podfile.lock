@@ -4,6 +4,7 @@ PODS:
   - CocoaLumberjack/Core (1.9.2)
   - CocoaLumberjack/Extensions (1.9.2):
     - CocoaLumberjack/Core
+  - FormatterKit/TimeIntervalFormatter (1.7.2)
   - JSQMessagesViewController (6.0-beta5):
     - JSQSystemSoundPlayer (~> 2.0.0)
   - JSQSystemSoundPlayer (2.0.0)
@@ -20,6 +21,7 @@ PODS:
     - YapDatabase/common
 
 DEPENDENCIES:
+  - FormatterKit/TimeIntervalFormatter (~> 1.6)
   - JSQMessagesViewController (= 6.0-beta5)
   - libsodium (from `Podspecs/libsodium.podspec.json`)
   - Mantle (~> 1.4)
@@ -32,6 +34,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   CocoaLumberjack: 205769c032b5fef85b92472046bcc8b7e7c8a817
+  FormatterKit: 230f6ae7a6e9ac468cb09b3ac2b7524effc8daaa
   JSQMessagesViewController: 69aac1d7a05c41f22f6f562dc95a919936e2c523
   JSQSystemSoundPlayer: c98443b1cbb3b45db09d0d3d6c2355cf78294981
   libsodium: ff93a5e950b3f7cad2beb6fedaca768af6ede801
@@ -39,4 +42,4 @@ SPEC CHECKSUMS:
   PureLayout: c8960fa0f3b40d849d5e177d699d0148faa63b63
   YapDatabase: 096e860167b04e629b88bea33dfb7a4153279bb0
 
-COCOAPODS: 0.34.2
+COCOAPODS: 0.34.4
