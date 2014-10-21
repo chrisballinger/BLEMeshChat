@@ -57,8 +57,7 @@
     _allMessagesViewName = @"BLEAllMessagesView";
     YapDatabaseViewGrouping *grouping = [YapDatabaseViewGrouping withObjectBlock:^NSString *(NSString *collection, NSString *key, id object) {
         if ([object isKindOfClass:[BLEMessage class]]) {
-            BLEMessage *message = object;
-            return [message yapGroup];
+            return @"all";
         }
         return nil;
     }];

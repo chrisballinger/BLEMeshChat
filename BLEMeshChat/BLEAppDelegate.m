@@ -7,7 +7,6 @@
 //
 
 #import "BLEAppDelegate.h"
-#import "BLERemotePeerTableViewController.h"
 #import "BLEMessagesViewController.h"
 #import "DDTTYLogger.h"
 #import "DDASLLogger.h"
@@ -79,25 +78,11 @@ static NSString * const kBLEPrimaryLocalPeerKey = @"kBLEPrimaryLocalPeerKey";
     
     
     BLEMessagesViewController *chatVC = [BLEMessagesViewController messagesViewController];
+    chatVC.title = NSLocalizedString(@"Chat", nil);
     chatVC.localPeer = localPeer;
     UINavigationController *chatNav = [[UINavigationController alloc] initWithRootViewController:chatVC];
-    chatVC.title = NSLocalizedString(@"Chat", nil);
-    chatNav.tabBarItem.image = [UIImage imageNamed:@"BLEChatIcon"];
     
-    BLERemotePeerTableViewController *peersVC = [[BLERemotePeerTableViewController alloc] initWithYapView:[BLEDatabaseManager sharedInstance].allRemotePeersViewName];
-    UINavigationController *peersNav = [[UINavigationController alloc] initWithRootViewController:peersVC];
-    peersVC.title = NSLocalizedString(@"Peers", nil);
-    peersNav.tabBarItem.image = [UIImage imageNamed:@"BLEGroupIcon"];
-    
-    UIViewController *profileVC = [[UIViewController alloc] init];
-    UINavigationController *profileNav = [[UINavigationController alloc] initWithRootViewController:profileVC];
-    profileVC.title = NSLocalizedString(@"Profile", nil);
-    profileNav.tabBarItem.image = [UIImage imageNamed:@"BLEUserProfileIcon"];
-    
-    
-    UITabBarController *tabBarController = [[UITabBarController alloc] init];
-    tabBarController.viewControllers = @[chatNav, peersNav, profileNav];
-    self.window.rootViewController = tabBarController;
+    self.window.rootViewController = chatNav;
     [self.window makeKeyAndVisible];
     return YES;
 }

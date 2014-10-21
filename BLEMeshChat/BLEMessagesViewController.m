@@ -13,6 +13,8 @@
 #import "JSQMessagesAvatarImageFactory.h"
 #import "JSQMessagesBubbleImageFactory.h"
 #import "UIColor+JSQMessages.h"
+#import "BLERemotePeerTableViewController.h"
+
 
 @interface BLEMessagesViewController()
 @property (nonatomic, strong, readonly) YapDatabaseConnection *readConnection;
@@ -53,6 +55,22 @@
     self.senderId = self.localPeer.yapKey;
     self.senderDisplayName = self.localPeer.displayName;
     [self setupMappings];
+
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"BLEUserProfileIcon"] style:UIBarButtonItemStyleBordered target:self action:@selector(profileButtonPressed:)];
+    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"BLEGroupIcon"] style:UIBarButtonItemStyleBordered target:self action:@selector(peersButtonPressed:)];
+}
+
+- (void) peersButtonPressed:(id)sender {
+    
+    BLERemotePeerTableViewController *peersVC = [[BLERemotePeerTableViewController alloc] initWithYapView:[BLEDatabaseManager sharedInstance].allRemotePeersViewName];
+    peersVC.title = NSLocalizedString(@"Peers", nil);
+    [self.navigationController pushViewController:peersVC animated:YES];
+}
+
+- (void) profileButtonPressed:(id)sender {
+    UIViewController *profileVC = [[UIViewController alloc] init];
+    profileVC.title = NSLocalizedString(@"Profile", nil);
+    [self.navigationController pushViewController:profileVC animated:YES];
 }
 
 #pragma mark - JSQMessagesViewController method overrides
@@ -71,9 +89,10 @@
      *  3. Call `finishSendingMessage`
      */
     BLEMessage *message = [[BLEMessage alloc] initWithMessageBody:text keyPair:self.localPeer.keyPair];
-    
+    NSString *key = message.yapKey;
+    NSString *collection = [[message class] yapCollection];
     [[BLEDatabaseManager sharedInstance].readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
-        [transaction setObject:message forKey:message.yapKey inCollection:[[message class] yapCollection]];
+        [transaction setObject:message forKey:key inCollection:collection];
     } completionBlock:^{
         [self finishSendingMessage];
     }];

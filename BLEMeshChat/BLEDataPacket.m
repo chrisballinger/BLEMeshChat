@@ -116,6 +116,7 @@ const NSUInteger kBLEDataPacketSenderPublicKeyOffset = kBLEDataPacketTimestampOf
         [packetData appendData:signature];
         
         _packetData = packetData;
+        _signature = signature;
     }
     return self;
 }
