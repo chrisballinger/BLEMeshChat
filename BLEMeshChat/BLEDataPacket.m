@@ -69,7 +69,8 @@ const NSUInteger kBLEDataPacketSenderPublicKeyOffset = kBLEDataPacketTimestampOf
 }
 
 - (BOOL) hasValidSignature {
-    BOOL hasValidSignature = [BLECrypto verifyData:self.packetData signature:self.signature publicKey:self.senderPublicKey];
+    NSData *signedPacketData = [self.packetData subdataWithRange:NSMakeRange(0, self.packetData.length - kBLECryptoEd25519SignatureLength)];
+    BOOL hasValidSignature = [BLECrypto verifyData:signedPacketData signature:self.signature publicKey:self.senderPublicKey];
     return hasValidSignature;
 }
 

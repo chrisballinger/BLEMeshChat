@@ -131,7 +131,9 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
 }
 
 - (void)centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary *)advertisementData RSSI:(NSNumber *)RSSI {
-    DDLogVerbose(@"didDiscoverPeripheral: %@\tadvertisementData: %@\tRSSI:%@", peripheral, advertisementData, RSSI);
+    if (peripheral.state != CBPeripheralStateConnected) {
+        DDLogVerbose(@"didDiscoverPeripheral: %@\tadvertisementData: %@\tRSSI:%@", peripheral, advertisementData, RSSI);
+    }
     [self.allDiscoveredPeripherals addObject:peripheral];
     peripheral.delegate = self;
     if (peripheral.state == CBPeripheralStateDisconnected) {
