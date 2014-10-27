@@ -252,7 +252,6 @@ static NSString * const kBLEMessagesWriteCharacteristicUUIDString = @"6EAEC220-5
                                                       responseData.length - request.offset)];
         DDLogInfo(@"Peripheral Sending data len %lu", request.value.length);
     }
-    request.value = responseData;
     DDLogVerbose(@"%@: %@ %@", THIS_FILE, THIS_METHOD, request);
     [peripheral respondToRequest:request withResult:result];
 }
