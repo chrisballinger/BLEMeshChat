@@ -55,6 +55,7 @@
     }
     self.transportStorage = [[BLETransportStorage alloc] init];
     self.transportManager = [[BLETransportManager alloc] initWithKeyPair:keyPair delegate:self.transportStorage delegateQueue:nil dataProvider:self.transportStorage];
+    self.transportManager.dataParser = self.transportStorage;
     UIUserNotificationSettings *notificationSettings = [UIUserNotificationSettings settingsForTypes:UIUserNotificationTypeAlert | UIUserNotificationTypeSound categories:nil];
     [[UIApplication sharedApplication] registerUserNotificationSettings:notificationSettings];
     
@@ -69,6 +70,10 @@
     self.window.rootViewController = chatNav;
     [self.window makeKeyAndVisible];
     return YES;
+}
+
+- (void) application:(UIApplication *)application didReceiveLocalNotification:(UILocalNotification *)notification {
+    DDLogInfo(@"Received local notification: %@", notification);
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application {
