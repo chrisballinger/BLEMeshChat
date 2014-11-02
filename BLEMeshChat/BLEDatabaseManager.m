@@ -25,6 +25,7 @@
         NSString *databasePath = [databaseDirectoryPath stringByAppendingPathComponent:databaseName];
         _database = [[YapDatabase alloc] initWithPath:databasePath];
         _readWriteConnection = [self.database newConnection];
+        _readConnection = [self.database newConnection];
         [self registerViews];
     }
     return self;
@@ -33,6 +34,8 @@
 - (void) registerViews {
     [self registerAllRemotePeersView];
     [self registerAllMessagesView];
+    [self registerOutgoingMessagesView];
+    
 }
 
 - (void) registerAllRemotePeersView {
@@ -67,6 +70,52 @@
     YapDatabaseView *databaseView = [[YapDatabaseView alloc] initWithGrouping:grouping sorting:sorting versionTag:[NSUUID UUID].UUIDString options:nil];
     [self.database asyncRegisterExtension:databaseView withName:self.allMessagesViewName completionBlock:^(BOOL ready) {
         DDLogInfo(@"%@ ready %d", self.allMessagesViewName, ready);
+    }];
+}
+
+- (void) registerOutgoingMessagesView {
+    _outgoingMessagesViewName = @"BLEOutgoingMessagesView";
+    // Group by sender
+    YapDatabaseViewGrouping *grouping = [YapDatabaseViewGrouping withObjectBlock:^NSString *(NSString *collection, NSString *key, id object) {
+        if ([object isKindOfClass:[BLEMessage class]]) {
+            BLEMessage *message = object;
+            NSString *base64SenderPublicKey = [message.senderPublicKey base64EncodedStringWithOptions:0];
+            return base64SenderPublicKey;
+        }
+        return nil;
+    }];
+    YapDatabaseViewSorting *sorting = [YapDatabaseViewSorting withObjectBlock:^NSComparisonResult(NSString *group, NSString *collection1, NSString *key1, BLEMessage *message1, NSString *collection2, NSString *key2, BLEMessage *message2) {
+        NSComparisonResult result = [@(message2.numberOfTimesBroadcast) compare:@(message1.numberOfTimesBroadcast)];
+        if (result == NSOrderedSame) {
+            result = [message2.lastBroadcastDate compare:message1.lastBroadcastDate];
+        }
+        return result;
+    }];
+    YapDatabaseView *databaseView = [[YapDatabaseView alloc] initWithGrouping:grouping sorting:sorting versionTag:[NSUUID UUID].UUIDString options:nil];
+    [self.database asyncRegisterExtension:databaseView withName:self.outgoingMessagesViewName completionBlock:^(BOOL ready) {
+        DDLogInfo(@"%@ ready %d", self.outgoingMessagesViewName, ready);
+    }];
+}
+
+- (void) registerOutgoingPeersView {
+    _outgoingPeersViewName = @"BLEOutgoingPeersView";
+    // Send all types of identities
+    YapDatabaseViewGrouping *grouping = [YapDatabaseViewGrouping withObjectBlock:^NSString *(NSString *collection, NSString *key, id object) {
+        if ([object isKindOfClass:[BLEIdentityPacket class]]) {
+            return @"all";
+        }
+        return nil;
+    }];
+    YapDatabaseViewSorting *sorting = [YapDatabaseViewSorting withObjectBlock:^NSComparisonResult(NSString *group, NSString *collection1, NSString *key1, id<BLETransportStats> peer1, NSString *collection2, NSString *key2, id<BLETransportStats> peer2) {
+        NSComparisonResult result = [@(peer2.numberOfTimesBroadcast) compare:@(peer1.numberOfTimesBroadcast)];
+        if (result == NSOrderedSame) {
+            result = [peer2.lastBroadcastDate compare:peer1.lastBroadcastDate];
+        }
+        return result;
+    }];
+    YapDatabaseView *databaseView = [[YapDatabaseView alloc] initWithGrouping:grouping sorting:sorting versionTag:[NSUUID UUID].UUIDString options:nil];
+    [self.database asyncRegisterExtension:databaseView withName:self.outgoingPeersViewName completionBlock:^(BOOL ready) {
+        DDLogInfo(@"%@ ready %d", self.outgoingPeersViewName, ready);
     }];
 }
 

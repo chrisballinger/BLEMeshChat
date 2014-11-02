@@ -9,6 +9,8 @@
 #import "BLERemotePeer.h"
 #import "BLEYapObjectProtocol.h"
 
+extern NSString * const kBLEPrimaryLocalPeerKey;
+
 @interface BLELocalPeer : BLEIdentityPacket <BLEYapObjectProtocol>
 
 // static properties
@@ -20,6 +22,8 @@
 
 + (NSString*) allIdentitiesGroupName;
 
++ (BLELocalPeer*) primaryIdentity;
++ (void) setPrimaryIdentity:(BLELocalPeer*)primaryIdentity;
 
 @end
 

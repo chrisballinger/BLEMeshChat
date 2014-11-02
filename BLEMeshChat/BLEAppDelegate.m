@@ -15,8 +15,6 @@
 #import "BLETransportManager.h"
 #import "BLETransportStorage.h"
 
-static NSString * const kBLEPrimaryLocalPeerKey = @"kBLEPrimaryLocalPeerKey";
-
 @interface BLEAppDelegate ()
 @property (nonatomic, strong) BLETransportManager *transportManager;
 @property (nonatomic, strong) BLETransportStorage *transportStorage;
@@ -37,16 +35,10 @@ static NSString * const kBLEPrimaryLocalPeerKey = @"kBLEPrimaryLocalPeerKey";
         DDLogInfo(@"didFinishLaunchingWithOptions with UIApplicationLaunchOptionsBluetoothPeripheralsKey %@", peripheralManagerIdentifiers);
     }
     
-    __block BLELocalPeer *localPeer = nil;
+    BLELocalPeer *localPeer = [BLELocalPeer primaryIdentity];
     BLEKeyPair *keyPair = nil;
-    NSString *primaryLocalPeerYapKey = [[NSUserDefaults standardUserDefaults] objectForKey:kBLEPrimaryLocalPeerKey];
-    if (primaryLocalPeerYapKey) {
-        [[BLEDatabaseManager sharedInstance].readWriteConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
-            localPeer = [transaction objectForKey:primaryLocalPeerYapKey inCollection:[BLELocalPeer yapCollection]];
-        }];
-        if (localPeer) {
-            keyPair = localPeer.keyPair;
-        }
+    if (localPeer) {
+        keyPair = localPeer.keyPair;
     }
     NSString *publicName = [[NSUserDefaults standardUserDefaults] objectForKey:@"kBLEPublicNameKey"];
     
@@ -55,16 +47,11 @@ static NSString * const kBLEPrimaryLocalPeerKey = @"kBLEPrimaryLocalPeerKey";
             publicName = NSLocalizedString(@"Test User", nil);
         }
         if (!keyPair) {
+            DDLogWarn(@"No existing keys found, generation new ones");
             keyPair = [BLEKeyPair keyPairWithType:BLEKeyTypeEd25519];
         }
         localPeer = [[BLELocalPeer alloc] initWithDisplayName:publicName keyPair:keyPair];
-        [[BLEDatabaseManager sharedInstance].readWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
-            [transaction setObject:localPeer forKey:primaryLocalPeerYapKey inCollection:[BLELocalPeer yapCollection]];
-        }];
-        [[NSUserDefaults standardUserDefaults] setObject:localPeer.yapKey forKey:kBLEPrimaryLocalPeerKey];
-        [[NSUserDefaults standardUserDefaults] synchronize];
-    } else {
-        keyPair = localPeer.keyPair;
+        [BLELocalPeer setPrimaryIdentity:localPeer];
     }
     self.transportStorage = [[BLETransportStorage alloc] init];
     self.transportManager = [[BLETransportManager alloc] initWithKeyPair:keyPair delegate:self.transportStorage delegateQueue:nil dataProvider:self.transportStorage];

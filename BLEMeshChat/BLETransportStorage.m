@@ -10,14 +10,28 @@
 #import "BLEMessage.h"
 #import "BLERemotePeer.h"
 #import "BLEDatabaseManager.h"
+#import "BLELocalPeer.h"
+
+@interface BLETransportStorage()
+@property (nonatomic, strong) YapDatabaseConnection *messagesReadConnection;
+@property (nonatomic, strong) YapDatabaseConnection *identitiesReadConnection;
+@end
 
 @implementation BLETransportStorage
+
+- (instancetype) init {
+    if (self = [super init]) {
+        self.messagesReadConnection = [[BLEDatabaseManager sharedInstance].database newConnection];
+        self.identitiesReadConnection = [[BLEDatabaseManager sharedInstance].database newConnection];
+    }
+    return self;
+}
 
 #pragma mark BLEDataParser methods
 
 - (BLEIdentityPacket*) identityForIdentityData:(NSData*)identityData {
     NSError *error = nil;
-    BLERemotePeer *identity = [[BLERemotePeer alloc] initWithPacketData:identityData error:&error];;
+    BLERemotePeer *identity = [[BLERemotePeer alloc] initWithPacketData:identityData error:&error];
     if (error) {
         DDLogError(@"Error parsing identity: %@", error);
     }
@@ -27,7 +41,7 @@
 
 - (BLEMessagePacket*) messageForMessageData:(NSData*)messageData {
     NSError *error = nil;
-    BLEMessage *message = [[BLEMessage alloc] initWithPacketData:messageData error:&error];;
+    BLEMessage *message = [[BLEMessage alloc] initWithPacketData:messageData error:&error];
     if (error) {
         DDLogError(@"Error parsing message: %@", error);
     }
@@ -151,14 +165,34 @@
 
 /** Called when a peer is requesting outgoing messages from you */
 - (BLEMessagePacket*) nextOutgoingMessageForPeer:(BLEIdentityPacket*)peer {
-#warning Return a message here
-    return nil;
+    __block BLEMessagePacket *message = nil;
+    BLELocalPeer *myIdentity = [BLELocalPeer primaryIdentity];
+    NSString *myBase64PublicKey = [myIdentity.senderPublicKey base64EncodedStringWithOptions:0];
+    // for now only send your own messages
+    [self.messagesReadConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+        YapDatabaseViewTransaction *viewTransaction = [transaction ext:[BLEDatabaseManager sharedInstance].outgoingMessagesViewName];
+        message =  [viewTransaction firstObjectInGroup:myBase64PublicKey];
+    }];
+    DDLogVerbose(@"Fetched outgoing message %@ for peer %@", message, peer);
+    return message;
 }
 
 /** Called when a peer is requesting outgoing identities from you */
 - (BLEIdentityPacket*) nextOutgoingIdentityForPeer:(BLEIdentityPacket*)peer {
-#warning Return an identity here
-    return nil;
+    __block BLEIdentityPacket *identity = nil;
+    
+    // always return primary identity for now
+    identity = [BLELocalPeer primaryIdentity];
+    if (identity) {
+        return identity;
+    }
+    
+    [self.identitiesReadConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+        YapDatabaseViewTransaction *viewTransaction = [transaction ext:[BLEDatabaseManager sharedInstance].outgoingPeersViewName];
+        identity = [viewTransaction firstObjectInGroup:@"all"];
+    }];
+    DDLogVerbose(@"Fetched outgoing identity %@ for peer %@", identity, peer);
+    return identity;
 }
 
 @end
