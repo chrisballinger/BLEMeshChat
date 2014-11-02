@@ -9,6 +9,8 @@
 #import "BLECrypto.h"
 #import "BLEIdentityPacket.h"
 #import "BLEMessagePacket.h"
+#import "BLEDataParser.h"
+#import "BLEDataProvider.h"
 
 @class BLEScanner;
 
@@ -16,39 +18,39 @@
 @required
 
 - (void)      scanner:(BLEScanner*)scanner
-receivedMessagePacket:(NSData*)messagePacket
-       fromPeripheral:(CBPeripheral*)peripheral;
+      receivedMessage:(BLEMessagePacket*)message
+             fromPeer:(BLEIdentityPacket*)peer;
 
 - (void)       scanner:(BLEScanner*)scanner
-receivedIdentityPacket:(NSData*)identityPacket
-        fromPeripheral:(CBPeripheral*)peripheral;
+      willWriteMessage:(BLEMessagePacket*)message
+                toPeer:(BLEIdentityPacket*)peer;
+
+- (void)       scanner:(BLEScanner*)scanner
+      receivedIdentity:(BLEIdentityPacket*)identity
+              fromPeer:(BLEIdentityPacket*)peer;
 
 - (void)        scanner:(BLEScanner*)scanner
-willWriteIdentityPacket:(NSData*)identityPacket
-           toPeripheral:(CBPeripheral*)peripheral;
+      willWriteIdentity:(BLEIdentityPacket*)identity
+                 toPeer:(BLEIdentityPacket*)peer;
 
-- (void)       scanner:(BLEScanner*)scanner
-willWriteMessagePacket:(NSData*)messagePacket
-          toPeripheral:(CBPeripheral*)peripheral;
 @end
 
 @interface BLEScanner : NSObject <CBCentralManagerDelegate, CBPeripheralDelegate>
 
 @property (nonatomic, weak, readonly) id<BLEScannerDelegate> delegate;
 @property (nonatomic, readonly) dispatch_queue_t delegateQueue;
-@property (nonatomic, strong, readonly) BLEIdentityPacket *identity;
+@property (nonatomic, weak, readonly) id<BLEDataParser> dataParser;
+@property (nonatomic, weak, readonly) id<BLEDataProvider> dataProvider;
 
-- (instancetype) initWithIdentity:(BLEIdentityPacket*)identity
-                          keyPair:(BLEKeyPair*)keyPair
-                         delegate:(id<BLEScannerDelegate>)delegate
-                    delegateQueue:(dispatch_queue_t)delegateQueue;
+- (instancetype) initWithKeyPair:(BLEKeyPair*)keyPair
+                        delegate:(id<BLEScannerDelegate>)delegate
+                   delegateQueue:(dispatch_queue_t)delegateQueue                       dataParser:(id<BLEDataParser>)dataParser
+                    dataProvider:(id<BLEDataProvider>)dataProvider;
 /**
  * Starts scanning.
  * @return success
  */
 - (BOOL) startScanning;
 - (void) stopScanning;
-
-- (void) broadcastMessagePacket:(BLEMessagePacket*)messagePacket;
 
 @end

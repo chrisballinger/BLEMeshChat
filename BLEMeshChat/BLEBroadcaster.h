@@ -9,7 +9,8 @@
 #import "BLECrypto.h"
 #import "BLEMessagePacket.h"
 #import "BLEIdentityPacket.h"
-
+#import "BLEDataParser.h"
+#import "BLEDataProvider.h"
 
 @class BLEBroadcaster;
 
@@ -17,20 +18,20 @@
 @required
 
 - (void)  broadcaster:(BLEBroadcaster*)broadcaster
-receivedMessagePacket:(NSData*)messagePacket
-          fromCentral:(CBCentral*)central;
+      receivedMessage:(BLEMessagePacket*)message
+             fromPeer:(BLEIdentityPacket*)peer;
 
 - (void)   broadcaster:(BLEBroadcaster*)broadcaster
-receivedIdentityPacket:(NSData*)identityPacket
-           fromCentral:(CBCentral*)central;
+      willWriteMessage:(BLEMessagePacket*)message
+                toPeer:(BLEIdentityPacket*)peer;
+
+- (void)   broadcaster:(BLEBroadcaster*)broadcaster
+      receivedIdentity:(BLEIdentityPacket*)identity
+              fromPeer:(BLEIdentityPacket*)peer;
 
 - (void)    broadcaster:(BLEBroadcaster*)broadcaster
-willWriteIdentityPacket:(NSData*)identityPacket
-              toCentral:(CBCentral*)central;
-
-- (void)   broadcaster:(BLEBroadcaster*)broadcaster
-willWriteMessagePacket:(NSData*)messagePacket
-             toCentral:(CBCentral*)central;
+      willWriteIdentity:(BLEIdentityPacket*)identity
+                 toPeer:(BLEIdentityPacket*)peer;
 
 @end
 
@@ -38,20 +39,19 @@ willWriteMessagePacket:(NSData*)messagePacket
 
 @property (nonatomic, weak, readonly) id<BLEBroadcasterDelegate> delegate;
 @property (nonatomic, readonly) dispatch_queue_t delegateQueue;
-@property (nonatomic, strong, readonly) BLEIdentityPacket *identity;
+@property (nonatomic, weak, readonly) id<BLEDataParser> dataParser;
+@property (nonatomic, weak, readonly) id<BLEDataProvider> dataProvider;
 
-- (instancetype) initWithIdentity:(BLEIdentityPacket*)identity
-                          keyPair:(BLEKeyPair*)keyPair
+- (instancetype) initWithKeyPair:(BLEKeyPair*)keyPair
                          delegate:(id<BLEBroadcasterDelegate>)delegate
-                    delegateQueue:(dispatch_queue_t)delegateQueue;
+                    delegateQueue:(dispatch_queue_t)delegateQueue                       dataParser:(id<BLEDataParser>)dataParser
+                     dataProvider:(id<BLEDataProvider>)dataProvider;
 /** 
  * Starts broadcasting.
  * @return success
  */
 - (BOOL) startBroadcasting;
 - (void) stopBroadcasting;
-
-- (void) broadcastMessagePacket:(BLEMessagePacket*)messagePacket;
 
 + (CBUUID*) meshChatServiceUUID;
 + (CBUUID*) messagesReadCharacteristicUUID;

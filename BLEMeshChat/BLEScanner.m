@@ -23,19 +23,16 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
 @property (nonatomic, strong) NSMutableSet *allDiscoveredPeripherals;
 
 @property (nonatomic, strong) BLEKeyPair *keyPair;
-@property (nonatomic, strong) BLEMessagePacket *messagePacket;
-@property (nonatomic, strong) BLEIdentityPacket *identity;
 @end
 
 @implementation BLEScanner
 
-- (instancetype) initWithIdentity:(BLEIdentityPacket*)identity
-                          keyPair:(BLEKeyPair*)keyPair
-                         delegate:(id<BLEScannerDelegate>)delegate
-                    delegateQueue:(dispatch_queue_t)delegateQueue {
+- (instancetype) initWithKeyPair:(BLEKeyPair*)keyPair
+                        delegate:(id<BLEScannerDelegate>)delegate
+                   delegateQueue:(dispatch_queue_t)delegateQueue                       dataParser:(id<BLEDataParser>)dataParser
+                    dataProvider:(id<BLEDataProvider>)dataProvider {
     if (self = [super init]) {
         _keyPair = keyPair;
-        _identity = identity;
         _eventQueue = dispatch_queue_create("BLEScanner Event Queue", 0);
         _delegate = delegate;
         if (!delegateQueue) {
@@ -43,6 +40,8 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
         } else {
             _delegateQueue = delegateQueue;
         }
+        _dataParser = dataParser;
+        _dataProvider = dataProvider;
         _centralManager = [[CBCentralManager alloc] initWithDelegate:self
                                                                      queue:_eventQueue
                                                                    options:@{CBCentralManagerOptionRestoreIdentifierKey: kBLEScannerRestoreIdentifier}];
@@ -71,13 +70,11 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
     [self.centralManager stopScan];
 }
 
-- (void) broadcastMessagePacket:(BLEMessagePacket *)messagePacket {
-    self.messagePacket = messagePacket;
+- (BLEIdentityPacket*) identityForPeripheral:(CBPeripheral*)peripheral {
+#warning Implement this method!
+    return nil;
 }
 
-- (void) broadcastIdentityPacket:(BLEIdentityPacket *)identityPacket {
-    self.identity = identityPacket;
-}
 #pragma mark - CBCentralManagerDelegate methods
 
 - (void)centralManagerDidUpdateState:(CBCentralManager *)central {
@@ -166,18 +163,22 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
         CBUUID *uuid = characteristic.UUID;
         if ([uuid isEqual:[BLEBroadcaster messagesReadCharacteristicUUID]]) {
             NSData *messagePacketData = characteristic.value;
+            BLEMessagePacket *message = [self.dataParser messageForMessageData:messagePacketData];
+            BLEIdentityPacket *peer = [self identityForPeripheral:peripheral];
             if (messagePacketData.length) {
                 dispatch_async(self.delegateQueue, ^{
-                    [self.delegate scanner:self receivedMessagePacket:messagePacketData fromPeripheral:peripheral];
+                    [self.delegate scanner:self receivedMessage:message fromPeer:peer];
                 });
             }
             // Keep reading outgoing messages
             [peripheral readValueForCharacteristic:characteristic];
         } else if ([uuid isEqual:[BLEBroadcaster identityReadCharacteristicUUID]]) {
             NSData *identityPacketData = characteristic.value;
+            BLEIdentityPacket *identity = [self.dataParser identityForIdentityData:identityPacketData];
+            BLEIdentityPacket *peer = [self identityForPeripheral:peripheral];
             if (identityPacketData.length) {
                 dispatch_async(self.delegateQueue, ^{
-                    [self.delegate scanner:self receivedIdentityPacket:identityPacketData fromPeripheral:peripheral];
+                    [self.delegate scanner:self receivedIdentity:identity fromPeer:peer];
                 });
             }
             // Keep reading outgoing identities
@@ -210,18 +211,22 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
                 [peripheral readValueForCharacteristic:characteristic];
             } else if ([uuid isEqual:[BLEBroadcaster messagesWriteCharacteristicUUID]]) {
                 // Start sending your outgoing messages
-                NSData *messagePacketData = [self.messagePacket packetData];
+                BLEIdentityPacket *peer = [self identityForPeripheral:peripheral];
+                BLEMessagePacket *message = [self.dataProvider nextOutgoingMessageForPeer:peer];
+                NSData *messagePacketData = [message packetData];
                 dispatch_async(self.delegateQueue, ^{
-                    [self.delegate scanner:self willWriteMessagePacket:messagePacketData toPeripheral:peripheral];
+                    [self.delegate scanner:self willWriteMessage:message toPeer:peer];
                 });
-                [peripheral writeValue:[self.messagePacket packetData] forCharacteristic:characteristic type:CBCharacteristicWriteWithResponse];
+                [peripheral writeValue:messagePacketData forCharacteristic:characteristic type:CBCharacteristicWriteWithResponse];
             } else if ([uuid isEqual:[BLEBroadcaster identityWriteCharacteristicUUID]]) {
                 // Start writing your outgoing identities
-                NSData *identityPacketData = [self.identity packetData];
+                BLEIdentityPacket *peer = [self identityForPeripheral:peripheral];
+                BLEIdentityPacket *identity = [self.dataProvider nextOutgoingIdentityForPeer:peer];
+                NSData *identityPacketData = [identity packetData];
                 dispatch_async(self.delegateQueue, ^{
-                    [self.delegate scanner:self willWriteIdentityPacket:identityPacketData toPeripheral:peripheral];
+                    [self.delegate scanner:self willWriteIdentity:identity toPeer:peer];
                 });
-                [peripheral writeValue:[self.identity packetData] forCharacteristic:characteristic type:CBCharacteristicWriteWithResponse];
+                [peripheral writeValue:identityPacketData forCharacteristic:characteristic type:CBCharacteristicWriteWithResponse];
             }
         }];
     }

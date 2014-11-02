@@ -13,13 +13,35 @@
 
 @implementation BLETransportStorage
 
-- (void) transportManager:(BLETransportManager*)transportManager
-   receivedIdentityPacket:(NSData*)identityPacket {
+#pragma mark BLEDataParser methods
+
+- (BLEIdentityPacket*) identityForIdentityData:(NSData*)identityData {
     NSError *error = nil;
-    BLERemotePeer *incomingPeer = [[BLERemotePeer alloc] initWithPacketData:identityPacket error:&error];
+    BLERemotePeer *identity = [[BLERemotePeer alloc] initWithPacketData:identityData error:&error];;
     if (error) {
-        DDLogError(@"Error parsing incoming identity: %@", error);
-    } else {
+        DDLogError(@"Error parsing identity: %@", error);
+    }
+    NSAssert(identity != nil, @"Could not parse identity data!");
+    return identity;
+}
+
+- (BLEMessagePacket*) messageForMessageData:(NSData*)messageData {
+    NSError *error = nil;
+    BLEMessage *message = [[BLEMessage alloc] initWithPacketData:messageData error:&error];;
+    if (error) {
+        DDLogError(@"Error parsing message: %@", error);
+    }
+    NSAssert(message != nil, @"Could not parse message data!");
+    return message;
+}
+
+#pragma mark BLETransportManagerDelegate methods
+
+- (void) transportManager:(BLETransportManager*)transportManager
+         receivedIdentity:(BLEIdentityPacket*)identity
+                 fromPeer:(BLEIdentityPacket*)peer {
+    if ([identity isKindOfClass:[BLERemotePeer class]]) {
+        BLERemotePeer *incomingPeer = (BLERemotePeer*)identity;
         NSString *key = incomingPeer.yapKey;
         NSString *collection = [[incomingPeer class] yapCollection];
         [[BLEDatabaseManager sharedInstance].readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
@@ -41,17 +63,17 @@
             localNotification.alertBody = [NSString stringWithFormat:@"%@ %@", incomingPeer.displayName, NSLocalizedString(@"is nearby!", nil)];
             [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
         });
-
+    } else {
+        DDLogError(@"Wrong peer class: %@", identity);
     }
 }
 
+/** Called when new messages are discovered from a peer */
 - (void) transportManager:(BLETransportManager*)transportManager
-    receivedMessagePacket:(NSData*)messagePacket {
-    NSError *error = nil;
-    BLEMessage *incomingMessage = [[BLEMessage alloc] initWithPacketData:messagePacket error:&error];
-    if (error) {
-        DDLogError(@"Error parsing incoming message: %@", error);
-    } else {
+          receivedMessage:(BLEMessagePacket*)message
+                 fromPeer:(BLEIdentityPacket*)peer {
+    if ([message isKindOfClass:[BLEMessage class]]) {
+        BLEMessage *incomingMessage = (BLEMessage*)message;
         NSString *key = incomingMessage.yapKey;
         NSString *collection = [[incomingMessage class] yapCollection];
         [[BLEDatabaseManager sharedInstance].readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
@@ -74,16 +96,16 @@
             message.numberOfTimesReceived = message.numberOfTimesReceived + 1;
             [transaction setObject:message forKey:key inCollection:collection];
         }];
+    } else {
+        DDLogError(@"Wrong message class: %@", message);
     }
 }
 
 - (void) transportManager:(BLETransportManager*)transportManager
-  willWriteIdentityPacket:(NSData*)identityPacket {
-    NSError *error = nil;
-    BLERemotePeer *outgoingPeer = [[BLERemotePeer alloc] initWithPacketData:identityPacket error:&error];
-    if (error) {
-        DDLogError(@"Error parsing outgoing identity: %@", error);
-    } else {
+        willWriteIdentity:(BLEIdentityPacket*)identity
+                   toPeer:(BLEIdentityPacket*)peer {
+    if ([identity isKindOfClass:[BLERemotePeer class]]) {
+        BLERemotePeer *outgoingPeer = (BLERemotePeer*)identity;
         NSString *key = outgoingPeer.yapKey;
         NSString *collection = [[outgoingPeer class] yapCollection];
         [[BLEDatabaseManager sharedInstance].readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
@@ -98,17 +120,16 @@
             remotePeer.numberOfTimesBroadcast = remotePeer.numberOfTimesBroadcast + 1;
             [transaction setObject:remotePeer forKey:key inCollection:collection];
         }];
+    } else {
+        DDLogError(@"Wrong peer class: %@", identity);
     }
-
 }
 
 - (void) transportManager:(BLETransportManager*)transportManager
-   willWriteMessagePacket:(NSData*)messagePacket {
-    NSError *error = nil;
-    BLEMessage *outgoingMessage = [[BLEMessage alloc] initWithPacketData:messagePacket error:&error];
-    if (error) {
-        DDLogError(@"Error parsing outgoing message: %@", error);
-    } else {
+         willWriteMessage:(BLEMessagePacket*)message
+                   toPeer:(BLEIdentityPacket*)peer {
+    if ([message isKindOfClass:[BLEMessage class]]) {
+        BLEMessage *outgoingMessage = (BLEMessage*)message;
         NSString *key = outgoingMessage.yapKey;
         NSString *collection = [[outgoingMessage class] yapCollection];
         [[BLEDatabaseManager sharedInstance].readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
@@ -123,7 +144,21 @@
             message.numberOfTimesBroadcast = message.numberOfTimesBroadcast + 1;
             [transaction setObject:message forKey:key inCollection:collection];
         }];
+    } else {
+        DDLogError(@"Wrong message class: %@", message);
     }
+}
+
+/** Called when a peer is requesting outgoing messages from you */
+- (BLEMessagePacket*) nextOutgoingMessageForPeer:(BLEIdentityPacket*)peer {
+#warning Return a message here
+    return nil;
+}
+
+/** Called when a peer is requesting outgoing identities from you */
+- (BLEIdentityPacket*) nextOutgoingIdentityForPeer:(BLEIdentityPacket*)peer {
+#warning Return an identity here
+    return nil;
 }
 
 @end

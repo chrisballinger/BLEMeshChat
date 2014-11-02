@@ -10,7 +10,7 @@
 #import "BLECrypto.h"
 
 const NSUInteger kBLEMessageBodyLength = 140;
-
+const NSUInteger kBLEMessageTotalLength = 309;
 //full: [[version=1][timestamp=8][sender_public_key=32][message=140][reply_signature=64]][signature=64]
 @interface BLEMessagePacket()
 @property (nonatomic, strong) NSData *messageBodyData;

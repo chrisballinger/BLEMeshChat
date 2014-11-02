@@ -72,6 +72,8 @@
 		D99FEAB719EFB66F003AE5CF /* BLEIdentityPacket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLEIdentityPacket.m; sourceTree = "<group>"; };
 		D99FEAB919F0641B003AE5CF /* BLETransportManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLETransportManager.h; sourceTree = "<group>"; };
 		D99FEABA19F0641B003AE5CF /* BLETransportManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLETransportManager.m; sourceTree = "<group>"; };
+		D9B2DFB31A05D08C0004D36C /* BLEDataParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLEDataParser.h; sourceTree = "<group>"; };
+		D9B2DFB41A05D49B0004D36C /* BLEDataProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLEDataProvider.h; sourceTree = "<group>"; };
 		D9BE2D3019EA0C3A00A7A82F /* BLEDatabaseManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLEDatabaseManager.h; sourceTree = "<group>"; };
 		D9BE2D3119EA0C3A00A7A82F /* BLEDatabaseManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLEDatabaseManager.m; sourceTree = "<group>"; };
 		D9C425DE19E89D9D004F7335 /* BLEMeshChat.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BLEMeshChat.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -184,6 +186,8 @@
 		D99FEABC19F0641F003AE5CF /* Transport */ = {
 			isa = PBXGroup;
 			children = (
+				D9B2DFB31A05D08C0004D36C /* BLEDataParser.h */,
+				D9B2DFB41A05D49B0004D36C /* BLEDataProvider.h */,
 				D99FEAB919F0641B003AE5CF /* BLETransportManager.h */,
 				D99FEABA19F0641B003AE5CF /* BLETransportManager.m */,
 				D9C4260C19E8A513004F7335 /* BLEScanner.h */,

@@ -9,6 +9,6 @@
 #import <Foundation/Foundation.h>
 #import "BLETransportManager.h"
 
-@interface BLETransportStorage : NSObject <BLETransportManagerDelegate>
+@interface BLETransportStorage : NSObject <BLETransportManagerDelegate, BLEDataParser, BLEDataProvider>
 
 @end

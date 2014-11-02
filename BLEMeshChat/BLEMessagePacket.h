@@ -26,6 +26,10 @@
                               messageBody:(NSString*)messageBody
                                   keyPair:(BLEKeyPair*)keyPair;
 
-extern const NSUInteger kBLEMessageBodyLength; // 140 bytes
+/** 140 bytes */
+extern const NSUInteger kBLEMessageBodyLength;
+/** 309 bytes */
+extern const NSUInteger kBLEMessageTotalLength;
+
 
 @end

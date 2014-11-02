@@ -12,33 +12,26 @@
 
 @interface BLETransportManager()
 @property (nonatomic, strong) BLEKeyPair *keyPair;
-@property (nonatomic, strong) BLEIdentityPacket *myIdentity;
-@property (nonatomic, strong) BLEMessagePacket *testMessage;
 @property (nonatomic) dispatch_queue_t eventQueue;
 @end
 
 @implementation BLETransportManager
 
-- (instancetype) initWithIdentity:(BLEIdentityPacket*)identity
-                          keyPair:(BLEKeyPair*)keyPair
-                         delegate:(id<BLETransportManagerDelegate>)delegate
-                    delegateQueue:(dispatch_queue_t)delegateQueue {
+- (instancetype) initWithKeyPair:(BLEKeyPair*)keyPair
+                        delegate:(id<BLETransportManagerDelegate>)delegate
+                   delegateQueue:(dispatch_queue_t)delegateQueue
+                    dataProvider:(id<BLEDataProvider>)dataProvider {
     if (self = [super init]) {
         _delegate = delegate;
         _keyPair = keyPair;
-        _myIdentity = identity;
         _eventQueue = dispatch_queue_create("BLETransportManager Event Queue", 0);
         if (!delegateQueue) {
             _delegateQueue = dispatch_queue_create("BLETransportManager Delegate Queue", 0);
         } else {
             _delegateQueue = delegateQueue;
         }
-        [self setupIdentityWithKeyPair:keyPair];
-        _scanner = [[BLEScanner alloc] initWithIdentity:identity keyPair:keyPair delegate:self delegateQueue:self.eventQueue];
-        _broadcaster = [[BLEBroadcaster alloc] initWithIdentity:identity keyPair:keyPair delegate:self delegateQueue:self.eventQueue];
-        
-        [self.scanner broadcastMessagePacket:self.testMessage];
-        [self.broadcaster broadcastMessagePacket:self.testMessage];
+        _scanner = [[BLEScanner alloc] initWithKeyPair:keyPair delegate:self delegateQueue:self.eventQueue dataParser:self dataProvider:dataProvider];
+        _broadcaster = [[BLEBroadcaster alloc] initWithKeyPair:keyPair delegate:self delegateQueue:self.eventQueue dataParser:self dataProvider:dataProvider];
     }
     return self;
 }
@@ -53,83 +46,115 @@
     [self.broadcaster stopBroadcasting];
 }
 
-- (void) setupIdentityWithKeyPair:(BLEKeyPair*)keyPair {
-    if (!self.testMessage) {
-        self.testMessage = [[BLEMessagePacket alloc] initWithMessageBody:@"Test Broadcast" keyPair:keyPair];
+- (BLEIdentityPacket*) identityForIdentityData:(NSData*)identityData {
+    BLEIdentityPacket *identity = nil;
+    if (self.dataParser) {
+        identity = [self.dataParser identityForIdentityData:identityData];
+    } else {
+        NSError *error = nil;
+        identity = [[BLEIdentityPacket alloc] initWithPacketData:identityData error:&error];
+        if (error) {
+            DDLogError(@"Error parsing identity: %@", error);
+        }
     }
+    NSAssert(identity != nil, @"Could not parse identity data!");
+    return identity;
 }
 
-- (void) broadcastMessagePacket:(BLEMessagePacket*)messagePacket {
-    [self.scanner broadcastMessagePacket:messagePacket];
-    [self.broadcaster broadcastMessagePacket:messagePacket];
+- (BLEMessagePacket*) messageForMessageData:(NSData*)messageData {
+    BLEMessagePacket *message = nil;
+    if (self.dataParser) {
+        message = [self.dataParser messageForMessageData:messageData];
+    } else {
+        NSError *error = nil;
+        message = [[BLEMessagePacket alloc] initWithPacketData:messageData error:&error];
+        if (error) {
+            DDLogError(@"Error parsing message: %@", error);
+        }
+    }
+    NSAssert(message != nil, @"Could not parse message data!");
+    return message;
 }
-
 
 #pragma mark BLEBroadcasterDelegate methods
 
+- (id<BLEDataParser>) parserForBroadcaster:(BLEBroadcaster*)broadcaster {
+    return self;
+}
+
 - (void)  broadcaster:(BLEBroadcaster*)broadcaster
-receivedMessagePacket:(NSData*)messagePacket
-          fromCentral:(CBCentral*)central {
+      receivedMessage:(BLEMessagePacket*)message
+             fromPeer:(BLEIdentityPacket*)peer {
     dispatch_async(self.delegateQueue, ^{
-        [self.delegate transportManager:self receivedMessagePacket:messagePacket];
+        [self.delegate transportManager:self receivedMessage:message fromPeer:peer];
     });
 }
 
 - (void)   broadcaster:(BLEBroadcaster*)broadcaster
-receivedIdentityPacket:(NSData*)identityPacket
-           fromCentral:(CBCentral*)central {
+      receivedIdentity:(BLEIdentityPacket*)identity
+              fromPeer:(BLEIdentityPacket*)peer {
     dispatch_async(self.delegateQueue, ^{
-        [self.delegate transportManager:self receivedIdentityPacket:identityPacket];
+        [self.delegate transportManager:self receivedIdentity:identity fromPeer:peer];
     });
 }
 
 - (void)    broadcaster:(BLEBroadcaster*)broadcaster
-willWriteIdentityPacket:(NSData*)identityPacket
-              toCentral:(CBCentral*)central {
+      willWriteIdentity:(BLEIdentityPacket*)identity
+                 toPeer:(BLEIdentityPacket*)peer {
     dispatch_async(self.delegateQueue, ^{
-        [self.delegate transportManager:self willWriteIdentityPacket:identityPacket];
+        [self.delegate transportManager:self willWriteIdentity:identity toPeer:peer];
     });
 }
 
 - (void)   broadcaster:(BLEBroadcaster*)broadcaster
-willWriteMessagePacket:(NSData*)messagePacket
-             toCentral:(CBCentral*)central {
+      willWriteMessage:(BLEMessagePacket*)message
+                toPeer:(BLEIdentityPacket*)peer {
     dispatch_async(self.delegateQueue, ^{
-        [self.delegate transportManager:self willWriteMessagePacket:messagePacket];
+        [self.delegate transportManager:self willWriteMessage:message toPeer:peer];
     });
 }
 
 #pragma mark BLEScannerDelegate methods
 
+- (BLEIdentityPacket*) scanner:(BLEScanner*)scanner
+       identityForIdentityData:(NSData*)identityData {
+    return [self identityForIdentityData:identityData];
+}
+
+- (BLEMessagePacket*) scanner:(BLEScanner*)scanner
+        messageForMessageData:(NSData*)messageData {
+    return [self messageForMessageData:messageData];
+}
+
 - (void)      scanner:(BLEScanner*)scanner
-receivedMessagePacket:(NSData*)messagePacket
-       fromPeripheral:(CBPeripheral*)peripheral {
+      receivedMessage:(BLEMessagePacket*)message
+             fromPeer:(BLEIdentityPacket*)peer {
     dispatch_async(self.delegateQueue, ^{
-        [self.delegate transportManager:self receivedMessagePacket:messagePacket];
+        [self.delegate transportManager:self receivedMessage:message fromPeer:peer];
     });
 }
 
 - (void)       scanner:(BLEScanner*)scanner
-receivedIdentityPacket:(NSData*)identityPacket
-        fromPeripheral:(CBPeripheral*)peripheral {
+      receivedIdentity:(BLEIdentityPacket*)identity
+              fromPeer:(BLEIdentityPacket*)peer {
     dispatch_async(self.delegateQueue, ^{
-        [self.delegate transportManager:self receivedIdentityPacket:identityPacket];
+        [self.delegate transportManager:self receivedIdentity:identity fromPeer:peer];
     });
 }
 
 - (void)        scanner:(BLEScanner*)scanner
-willWriteIdentityPacket:(NSData*)identityPacket
-           toPeripheral:(CBPeripheral*)peripheral {
+      willWriteIdentity:(BLEIdentityPacket*)identity
+                 toPeer:(BLEIdentityPacket*)peer {
     dispatch_async(self.delegateQueue, ^{
-        [self.delegate transportManager:self willWriteIdentityPacket:identityPacket];
+        [self.delegate transportManager:self willWriteIdentity:identity toPeer:peer];
     });
 }
 
 - (void)       scanner:(BLEScanner*)scanner
-willWriteMessagePacket:(NSData*)messagePacket
-          toPeripheral:(CBPeripheral*)peripheral {
+      willWriteMessage:(BLEMessagePacket*)message
+                toPeer:(BLEIdentityPacket*)peer {
     dispatch_async(self.delegateQueue, ^{
-        [self.delegate transportManager:self willWriteMessagePacket:messagePacket];
+        [self.delegate transportManager:self willWriteMessage:message toPeer:peer];
     });
 }
 

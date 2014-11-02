@@ -67,8 +67,7 @@ static NSString * const kBLEPrimaryLocalPeerKey = @"kBLEPrimaryLocalPeerKey";
         keyPair = localPeer.keyPair;
     }
     self.transportStorage = [[BLETransportStorage alloc] init];
-    self.transportManager = [[BLETransportManager alloc] initWithIdentity:localPeer keyPair:keyPair delegate:self.transportStorage delegateQueue:nil];
-    
+    self.transportManager = [[BLETransportManager alloc] initWithKeyPair:keyPair delegate:self.transportStorage delegateQueue:nil dataProvider:self.transportStorage];
     UIUserNotificationSettings *notificationSettings = [UIUserNotificationSettings settingsForTypes:UIUserNotificationTypeAlert | UIUserNotificationTypeSound categories:nil];
     [[UIApplication sharedApplication] registerUserNotificationSettings:notificationSettings];
     
