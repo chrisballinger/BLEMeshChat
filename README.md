@@ -1,11 +1,18 @@
 # [BLEMeshChat](https://github.com/chrisballinger/BLEMeshChat) [![Build Status](https://travis-ci.org/chrisballinger/BLEMeshChat.svg?branch=master)](https://travis-ci.org/chrisballinger/BLEMeshChat)
 
-Bluetooth LE Mesh Chat
+Bluetooth LE mesh chat prototype for iOS. [Android version over here](https://github.com/onlyinamerica/blemeshchat).
+
+## Goals
+
+* Use the Bluetooth 4.0 Low Energy APIs on iOS and Android to allow for pairing-free promiscuous background synchronization for anyone with a protocol-compatible app installed.
+* Be a 100% sneakernet protocol, with absolutely no internet functionality.
+* Use modern crypto (via libsodium) that's tailored to the limitations of BLE and an ultra-high latency, unreliable sneakernet.
+* Implement a familiar and friendly Twitter-style UI/UX with a public feed, replies, reposts and (maybe) direct messaging.
+* Only show Gravatar-style avatars and hashes for other's identities until you verify keys in person, and somehow make this process seem enjoyable.
 
 ## Protocol
 
-Prototype draft [Bluetooth LE Mesh Chat Spec](https://github.com/chrisballinger/BLEMeshChat/wiki)
-
+There's still a lot of unsolved problems, but we're close to a working prototype. For more information about the current draft protocol, check out the [Bluetooth LE Mesh Chat Spec](https://github.com/chrisballinger/BLEMeshChat/wiki) wiki.
 
 ## Attribution
 
