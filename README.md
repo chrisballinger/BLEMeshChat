@@ -1,6 +1,6 @@
 # [BLEMeshChat](https://github.com/chrisballinger/BLEMeshChat) [![Build Status](https://travis-ci.org/chrisballinger/BLEMeshChat.svg?branch=master)](https://travis-ci.org/chrisballinger/BLEMeshChat)
 
-[![Screenshot](https://i.imgur.com/z8lEdPMm.png)]([Imgur](https://i.imgur.com/z8lEdPM.png))
+[![Screenshot](https://i.imgur.com/z8lEdPMm.png)](https://i.imgur.com/z8lEdPM.png)
 
 Bluetooth LE mesh chat prototype for iOS. [Android version over here](https://github.com/onlyinamerica/blemeshchat).
 
