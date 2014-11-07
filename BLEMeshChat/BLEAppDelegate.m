@@ -60,7 +60,7 @@
     [[UIApplication sharedApplication] registerUserNotificationSettings:notificationSettings];
     
     self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
-    
+    self.window.backgroundColor = [UIColor whiteColor];
     
     BLEMessagesViewController *chatVC = [BLEMessagesViewController messagesViewController];
     chatVC.title = NSLocalizedString(@"Chat", nil);

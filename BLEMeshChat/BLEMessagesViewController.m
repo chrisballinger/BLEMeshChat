@@ -47,8 +47,8 @@
     _incomingBubbleImageData = [bubbleFactory incomingMessagesBubbleImageWithColor:[UIColor jsq_messageBubbleGreenColor]];
     
     
-    self.collectionView.collectionViewLayout.incomingAvatarViewSize = CGSizeZero;
-    self.collectionView.collectionViewLayout.outgoingAvatarViewSize = CGSizeZero;
+    self.collectionView.collectionViewLayout.incomingAvatarViewSize = CGSizeMake(25, 25);
+    self.collectionView.collectionViewLayout.outgoingAvatarViewSize = CGSizeMake(25, 25);
     /**
      *  You MUST set your senderId and display name
      */
@@ -148,7 +148,6 @@
     return message;
 }
 
-
 #pragma mark - JSQMessages CollectionView DataSource
 
 - (id<JSQMessageData>)collectionView:(JSQMessagesCollectionView *)collectionView messageDataForItemAtIndexPath:(NSIndexPath *)indexPath
@@ -169,7 +168,13 @@
 
 - (id<JSQMessageAvatarImageDataSource>)collectionView:(JSQMessagesCollectionView *)collectionView avatarImageDataForItemAtIndexPath:(NSIndexPath *)indexPath
 {
-    return nil;
+    __block BLERemotePeer *sender = nil;
+    
+    [self.readConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+        BLEMessage *message = [[transaction extension:[BLEDatabaseManager sharedInstance].allMessagesViewName] objectAtIndexPath:indexPath withMappings:self.mappings];
+        sender = [message senderWithTransaction:transaction];
+    }];
+    return sender;
 }
 
 - (NSAttributedString *)collectionView:(JSQMessagesCollectionView *)collectionView attributedTextForCellTopLabelAtIndexPath:(NSIndexPath *)indexPath

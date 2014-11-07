@@ -7,6 +7,7 @@
 //
 
 #import "BLEMessage.h"
+#import "BLEDatabaseManager.h"
 
 @implementation BLEMessage
 @synthesize lastReceivedDate;
@@ -56,7 +57,20 @@
  *  @warning You must not return `nil` from this method.
  */
 - (NSString *)senderDisplayName {
-    return self.senderYapKey;
+    NSString *displayName = nil;
+    __block BLERemotePeer *sender = nil;
+    NSString *key = self.senderYapKey;
+    
+    // It would probably be better to do this some other way
+    [[BLEDatabaseManager sharedInstance].readConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+        sender = [transaction objectForKey:key inCollection:[BLERemotePeer yapCollection]];
+    }];
+    if (sender.displayName.length > 0) {
+        displayName = [NSString stringWithFormat:@"%@ - %@", sender.displayName, self.senderYapKey];
+    } else {
+        displayName = self.senderYapKey;
+    }
+    return displayName;
 }
 
 /**

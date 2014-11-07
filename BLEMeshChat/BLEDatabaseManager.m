@@ -43,7 +43,10 @@
     YapDatabaseViewGrouping *grouping = [YapDatabaseViewGrouping withObjectBlock:^NSString *(NSString *collection, NSString *key, id object) {
         if ([object isKindOfClass:[BLERemotePeer class]]) {
             BLERemotePeer *remotePeer = object;
-            return [remotePeer yapGroup];
+            if (remotePeer.lastReceivedDate) {
+                return [remotePeer yapGroup];
+            }
+            return nil;
         }
         return nil;
     }];
@@ -65,7 +68,7 @@
         return nil;
     }];
     YapDatabaseViewSorting *sorting = [YapDatabaseViewSorting withObjectBlock:^NSComparisonResult(NSString *group, NSString *collection1, NSString *key1, BLEMessage *message1, NSString *collection2, NSString *key2, BLEMessage *message2) {
-        return [message2.lastReceivedDate compare:message1.lastReceivedDate];
+        return [message1.timestampDate compare:message2.timestampDate];
     }];
     YapDatabaseView *databaseView = [[YapDatabaseView alloc] initWithGrouping:grouping sorting:sorting versionTag:[NSUUID UUID].UUIDString options:nil];
     [self.database asyncRegisterExtension:databaseView withName:self.allMessagesViewName completionBlock:^(BOOL ready) {
@@ -85,9 +88,9 @@
         return nil;
     }];
     YapDatabaseViewSorting *sorting = [YapDatabaseViewSorting withObjectBlock:^NSComparisonResult(NSString *group, NSString *collection1, NSString *key1, BLEMessage *message1, NSString *collection2, NSString *key2, BLEMessage *message2) {
-        NSComparisonResult result = [@(message2.numberOfTimesBroadcast) compare:@(message1.numberOfTimesBroadcast)];
+        NSComparisonResult result = [@(message1.numberOfTimesBroadcast) compare:@(message2.numberOfTimesBroadcast)];
         if (result == NSOrderedSame) {
-            result = [message2.lastBroadcastDate compare:message1.lastBroadcastDate];
+            result = [message1.lastBroadcastDate compare:message2.lastBroadcastDate];
         }
         return result;
     }];

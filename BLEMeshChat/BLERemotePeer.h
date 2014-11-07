@@ -9,9 +9,9 @@
 #import "BLEIdentityPacket.h"
 #import "BLEYapObjectProtocol.h"
 #import "BLETransportStats.h"
+#import "JSQMessageAvatarImageDataSource.h"
 
-
-@interface BLERemotePeer : BLEIdentityPacket <BLEYapObjectProtocol, BLETransportStats>
+@interface BLERemotePeer : BLEIdentityPacket <BLEYapObjectProtocol, BLETransportStats, JSQMessageAvatarImageDataSource>
 
 @property (nonatomic) BOOL isLocallyVerified;
 

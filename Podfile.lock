@@ -5,6 +5,7 @@ PODS:
   - CocoaLumberjack/Extensions (1.9.2):
     - CocoaLumberjack/Core
   - FormatterKit/TimeIntervalFormatter (1.7.2)
+  - IGIdenticon (0.2.1)
   - InAppSettingsKit (2.1)
   - JSQMessagesViewController (6.0-beta6):
     - JSQSystemSoundPlayer (~> 2.0.0)
@@ -23,22 +24,27 @@ PODS:
 
 DEPENDENCIES:
   - FormatterKit/TimeIntervalFormatter (~> 1.6)
+  - IGIdenticon (~> 0.2.0)
   - InAppSettingsKit (~> 2.1)
-  - JSQMessagesViewController (= 6.0-beta6)
+  - JSQMessagesViewController (from `https://github.com/jessesquires/JSQMessagesViewController.git`, branch `develop`)
   - libsodium (from `Podspecs/libsodium.podspec.json`)
   - Mantle (~> 1.4)
   - PureLayout (~> 2.0)
   - YapDatabase (~> 2.5)
 
 EXTERNAL SOURCES:
+  JSQMessagesViewController:
+    :branch: develop
+    :git: https://github.com/jessesquires/JSQMessagesViewController.git
   libsodium:
     :podspec: Podspecs/libsodium.podspec.json
 
 SPEC CHECKSUMS:
   CocoaLumberjack: 205769c032b5fef85b92472046bcc8b7e7c8a817
   FormatterKit: 230f6ae7a6e9ac468cb09b3ac2b7524effc8daaa
+  IGIdenticon: e644cd0e5a41a86082ab4c06221ca5bf45ea70bb
   InAppSettingsKit: 853cdc9fcc76b87a4694f8d2b930e116463b5a29
-  JSQMessagesViewController: 6e78b14e804a0ac4353765ef40e9d20c157a0ebf
+  JSQMessagesViewController: 960a09d11978bea52d1a676e97980838f8d98652
   JSQSystemSoundPlayer: c98443b1cbb3b45db09d0d3d6c2355cf78294981
   libsodium: ff93a5e950b3f7cad2beb6fedaca768af6ede801
   Mantle: d7c5ac734579ec751c58fecbf56189853056c58c
