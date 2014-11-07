@@ -217,6 +217,9 @@ static NSString * const kBLEMessagesWriteCharacteristicUUIDString = @"6EAEC220-5
             responseData = [self.payloadCache objectForKey:requestUUID];
         } else {
             BLEMessagePacket *messagePacket = [self.dataProvider nextOutgoingMessageForPeer:peer];
+            if (!messagePacket) {
+                return;
+            }
             responseData = [messagePacket packetData];
             [self.payloadCache setObject:responseData forKey:requestUUID];
             dispatch_async(self.delegateQueue, ^{

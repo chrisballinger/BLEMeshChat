@@ -213,6 +213,9 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
                 // Start sending your outgoing messages
                 BLEIdentityPacket *peer = [self identityForPeripheral:peripheral];
                 BLEMessagePacket *message = [self.dataProvider nextOutgoingMessageForPeer:peer];
+                if (!message) {
+                    return;
+                }
                 NSData *messagePacketData = [message packetData];
                 dispatch_async(self.delegateQueue, ^{
                     [self.delegate scanner:self willWriteMessage:message toPeer:peer];
