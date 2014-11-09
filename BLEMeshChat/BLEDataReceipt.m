@@ -42,6 +42,9 @@
 + (BOOL) receiptExistsForPeer:(id<BLEYapObjectProtocol>)peer
                          data:(id<BLEYapObjectProtocol>)data
               readTransaction:(YapDatabaseReadTransaction*)readTransaction {
+    if (!peer || !data) {
+        return NO;
+    }
     __block BOOL exists = NO;
     NSString *key = [[self class] yapKeyForPeerYapKey:peer.yapKey dataYapKey:data.yapKey];
     BLEDataReceipt *receipt = [readTransaction objectForKey:key inCollection:[BLEDataReceipt yapCollection]];
@@ -51,9 +54,9 @@
     return exists;
 }
 
-+ (void) setReceiptFor:(id<BLEYapObjectProtocol>)peer
-                  data:(id<BLEYapObjectProtocol>)data
-  readWriteTransaction:(YapDatabaseReadWriteTransaction*)readWriteTransaction {
++ (void) setReceiptForPeer:(id<BLEYapObjectProtocol>)peer
+                      data:(id<BLEYapObjectProtocol>)data
+      readWriteTransaction:(YapDatabaseReadWriteTransaction*)readWriteTransaction {
     BLEDataReceipt *receipt = [[BLEDataReceipt alloc] initWithPeer:peer data:data];
     [readWriteTransaction setObject:receipt forKey:receipt.yapKey inCollection:[[receipt class] yapCollection]];
 }

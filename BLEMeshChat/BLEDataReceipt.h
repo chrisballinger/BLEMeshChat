@@ -24,8 +24,8 @@
                          data:(id<BLEYapObjectProtocol>)data
               readTransaction:(YapDatabaseReadTransaction*)readTransaction;
 
-+ (void) setReceiptFor:(id<BLEYapObjectProtocol>)peer
-                  data:(id<BLEYapObjectProtocol>)data
-  readWriteTransaction:(YapDatabaseReadWriteTransaction*)readWriteTransaction;
++ (void) setReceiptForPeer:(id<BLEYapObjectProtocol>)peer
+                      data:(id<BLEYapObjectProtocol>)data
+      readWriteTransaction:(YapDatabaseReadWriteTransaction*)readWriteTransaction;
 
 @end

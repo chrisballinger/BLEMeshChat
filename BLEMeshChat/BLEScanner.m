@@ -17,9 +17,11 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
 @property (nonatomic, strong) CBCentralManager *centralManager;
 @property (nonatomic) dispatch_queue_t eventQueue;
 
-@property (nonatomic, strong) NSMutableDictionary *identitiesToPeripheralCache;
+@property (nonatomic, strong) NSMutableDictionary *peerToPeripheralCache;
 
 @property (nonatomic, strong) NSMutableSet *allDiscoveredPeripherals;
+
+@property (nonatomic, strong) NSMutableDictionary *characteristicsDictionary;
 
 @end
 
@@ -32,8 +34,9 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
         _centralManager = [[CBCentralManager alloc] initWithDelegate:self
                                                                      queue:_eventQueue
                                                                    options:@{CBCentralManagerOptionRestoreIdentifierKey: kBLEScannerRestoreIdentifier}];
-        _identitiesToPeripheralCache = [NSMutableDictionary dictionary];
+        _peerToPeripheralCache = [NSMutableDictionary dictionary];
         _allDiscoveredPeripherals = [NSMutableSet set];
+        _characteristicsDictionary = [NSMutableDictionary dictionary];
     }
     return self;
 }
@@ -56,13 +59,17 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
     [self.centralManager stopScan];
 }
 
-- (BLEIdentityPacket*) identityForPeripheral:(CBPeripheral*)peripheral {
-    BLEIdentityPacket *identity = [self.identitiesToPeripheralCache objectForKey:peripheral.identifier];
-    return identity;
+- (BLEIdentityPacket*) peerForPeripheral:(CBPeripheral*)peripheral {
+    BLEIdentityPacket *peer = [self.peerToPeripheralCache objectForKey:peripheral.identifier];
+    return peer;
 }
 
-- (void) setIdentity:(BLEIdentityPacket*)identity forPeripheral:(CBPeripheral*)peripheral {
-    [self.identitiesToPeripheralCache setObject:identity forKey:peripheral.identifier];
+- (CBCharacteristic*) characteristicForUUID:(CBUUID*)uuid {
+    return [self.characteristicsDictionary objectForKey:uuid.UUIDString];
+}
+
+- (void) setPeer:(BLEIdentityPacket*)peer forPeripheral:(CBPeripheral*)peripheral {
+    [self.peerToPeripheralCache setObject:peer forKey:peripheral.identifier];
 }
 
 #pragma mark - CBCentralManagerDelegate methods
@@ -151,33 +158,81 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
     } else {
         DDLogVerbose(@"%@: %@ %@", THIS_FILE, THIS_METHOD, characteristic);
         CBUUID *uuid = characteristic.UUID;
+        BLEIdentityPacket *peer = [self peerForPeripheral:peripheral];
+        
         if ([uuid isEqual:[BLEBroadcaster messagesReadCharacteristicUUID]]) {
             NSData *messagePacketData = characteristic.value;
             BLEMessagePacket *message = [self.dataStorage transport:self messageForMessageData:messagePacketData];
-            BLEIdentityPacket *peer = [self identityForPeripheral:peripheral];
             if (messagePacketData.length) {
-                    [self.dataStorage transport:self receivedMessage:message fromPeer:peer];
+                [self.dataStorage transport:self receivedMessage:message fromPeer:peer];
             }
             // Keep reading outgoing messages
             [peripheral readValueForCharacteristic:characteristic];
         } else if ([uuid isEqual:[BLEBroadcaster identityReadCharacteristicUUID]]) {
             NSData *identityPacketData = characteristic.value;
             BLEIdentityPacket *identity = [self.dataStorage transport:self identityForIdentityData:identityPacketData];
-            BLEIdentityPacket *peer = [self identityForPeripheral:peripheral];
-            if (identityPacketData.length) {
-                    [self.dataStorage transport:self receivedIdentity:identity fromPeer:peer];
+            if (identity) {
+                // Right now we assume the first peer response
+                // corresponds to the peripheral's identity. This should be verified
+                // cryptographically using a handshake to establish
+                // ownership of the claimed public key.
+#warning Peer spoofing vulnerability
+                if (!peer) {
+                    peer = identity;
+                    [self setPeer:peer forPeripheral:peripheral];
+
+                    // Start reading outgoing messages
+                    CBCharacteristic *messageRead = [self characteristicForUUID:[BLEBroadcaster messagesReadCharacteristicUUID]];
+                    [peripheral readValueForCharacteristic:messageRead];
+                    
+                    // Start sending your outgoing messages
+                    [self sendNextMessageToPeripheral:peripheral];
+                }
+                [self.dataStorage transport:self receivedIdentity:identity fromPeer:peer];
+                // Keep reading outgoing identities
+                [peripheral readValueForCharacteristic:characteristic];
             }
-            // Keep reading outgoing identities
-            [peripheral readValueForCharacteristic:characteristic];
         }
     }
 }
+
+- (void) sendNextMessageToPeripheral:(CBPeripheral*)peripheral {
+    BLEIdentityPacket *peer = [self peerForPeripheral:peripheral];
+    BLEMessagePacket *message = [self.dataStorage transport:self nextOutgoingMessageForPeer:peer];
+    if (!message) {
+        return;
+    }
+    NSData *messagePacketData = [message packetData];
+    [self.dataStorage transport:self willWriteMessage:message toPeer:peer];
+    CBCharacteristic *messageWrite = [self characteristicForUUID:[BLEBroadcaster messagesWriteCharacteristicUUID]];
+    [peripheral writeValue:messagePacketData forCharacteristic:messageWrite type:CBCharacteristicWriteWithResponse];
+}
+
+- (void) sendNextIdentityToPeripheral:(CBPeripheral*)peripheral {
+    // Write your identity
+    BLEIdentityPacket *peer = [self peerForPeripheral:peripheral];
+    BLEIdentityPacket *identity = [self.dataStorage transport:self nextOutgoingIdentityForPeer:peer];
+    if (!identity) {
+        return;
+    }
+    NSData *identityPacketData = [identity packetData];
+    [self.dataStorage transport:self willWriteIdentity:identity toPeer:peer];
+    CBCharacteristic *identityWrite = [self characteristicForUUID:[BLEBroadcaster identityWriteCharacteristicUUID]];
+    [peripheral writeValue:identityPacketData forCharacteristic:identityWrite type:CBCharacteristicWriteWithResponse];
+}
+
 
 - (void)peripheral:(CBPeripheral *)peripheral didWriteValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error {
     if (error) {
         DDLogError(@"%@: %@ %@", THIS_FILE, THIS_METHOD, error.userInfo);
     } else {
         DDLogVerbose(@"%@: %@ %@", THIS_FILE, THIS_METHOD, characteristic);
+        CBUUID *uuid = characteristic.UUID;
+        if ([uuid isEqual:[BLEBroadcaster identityWriteCharacteristicUUID]]) {
+            [self sendNextIdentityToPeripheral:peripheral];
+        } else if ([uuid isEqual:[BLEBroadcaster messagesWriteCharacteristicUUID]]) {
+            [self sendNextMessageToPeripheral:peripheral];
+        }
     }
 }
 
@@ -185,53 +240,19 @@ static NSString * const kBLEScannerRestoreIdentifier = @"kBLEScannerRestoreIdent
     if (error) {
         DDLogError(@"%@: %@ %@", THIS_FILE, THIS_METHOD, error.userInfo);
     } else {
-        DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
+        DDLogVerbose(@"%@: %@ %@", THIS_FILE, THIS_METHOD, service.characteristics);
+        
         [service.characteristics enumerateObjectsUsingBlock:^(CBCharacteristic *characteristic, NSUInteger idx, BOOL *stop) {
-            DDLogInfo(@"Discovered characteristic: %@", characteristic);
-            CBUUID *uuid = characteristic.UUID;
-            if ([uuid isEqual:[BLEBroadcaster messagesReadCharacteristicUUID]]) {
-                // Start reading outgoing messages
-                [peripheral readValueForCharacteristic:characteristic];
-            } else if ([uuid isEqual:[BLEBroadcaster identityReadCharacteristicUUID]]) {
-                // Start reading outgoing identities
-                [peripheral readValueForCharacteristic:characteristic];
-            } else if ([uuid isEqual:[BLEBroadcaster messagesWriteCharacteristicUUID]]) {
-                // Start sending your outgoing messages
-                BLEIdentityPacket *peer = [self identityForPeripheral:peripheral];
-                BLEMessagePacket *message = [self.dataStorage transport:self nextOutgoingMessageForPeer:peer];
-                if (!message) {
-                    return;
-                }
-                BOOL shouldSendData = YES;
-                if (peer) {
-                    //shouldSendData = [self.dataProvider hasAlreadySentData:message toPeer:peer];
-                    // Don't send dupe packets
-                    if (shouldSendData == NO) {
-                        return;
-                    }
-                }
-                NSData *messagePacketData = [message packetData];
-                    [self.dataStorage transport:self willWriteMessage:message toPeer:peer];
-                [peripheral writeValue:messagePacketData forCharacteristic:characteristic type:CBCharacteristicWriteWithResponse];
-            } else if ([uuid isEqual:[BLEBroadcaster identityWriteCharacteristicUUID]]) {
-                // Start writing your outgoing identities
-                BLEIdentityPacket *peer = [self identityForPeripheral:peripheral];
-                BLEIdentityPacket *identity = [self.dataStorage transport:self nextOutgoingIdentityForPeer:peer];
-                BOOL shouldSendData = YES;
-                if (peer) {
-                    //shouldSendData = [self.dataProvider hasAlreadySentData:identity toPeer:peer];
-                    // Don't send dupe packets
-                    if (shouldSendData == NO) {
-                        return;
-                    }
-                }
-                NSData *identityPacketData = [identity packetData];
-                [self.dataStorage transport:self willWriteIdentity:identity toPeer:peer];
-                [peripheral writeValue:identityPacketData forCharacteristic:characteristic type:CBCharacteristicWriteWithResponse];
-            }
+            [self.characteristicsDictionary setObject:characteristic forKey:characteristic.UUID.UUIDString];
         }];
+        
+        // Write your identity
+        [self sendNextIdentityToPeripheral:peripheral];
+        
+        // Read peripheral's identity
+        CBCharacteristic *identityRead = [self characteristicForUUID:[BLEBroadcaster identityReadCharacteristicUUID]];
+        [peripheral readValueForCharacteristic:identityRead];
     }
 }
-
 
 @end

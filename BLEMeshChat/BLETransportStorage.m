@@ -32,11 +32,6 @@
 /** Return NO if you've already sent this data to a peer */
 - (BOOL) shouldWriteData:(BLEDataPacket*)data
             toPeer:(BLEIdentityPacket*)peer {
-    NSAssert(data != nil, @"Data shouldn't be nil");
-    NSAssert(peer != nil, @"Peer shouldn't be nil");
-    if (!data || !peer) {
-        return NO;
-    }
     __block BOOL shouldWriteData = YES;
     id<BLEYapObjectProtocol> remotePeer = (id<BLEYapObjectProtocol>)peer;
     id<BLEYapObjectProtocol> outgoingData = (id<BLEYapObjectProtocol>)data;
@@ -91,6 +86,9 @@
             } else {
                 // new identity found
                 remotePeer = incomingPeer;
+                [BLEDataReceipt setReceiptForPeer:(BLERemotePeer*)peer
+                                             data:incomingPeer
+                             readWriteTransaction:transaction];
             }
             remotePeer.lastReceivedDate = [NSDate date];
             remotePeer.numberOfTimesReceived = remotePeer.numberOfTimesReceived + 1;
@@ -124,14 +122,9 @@
                 // new message received
                 message = incomingMessage;
                 
-                if ([peer isKindOfClass:[BLERemotePeer class]]) {
-                    BLERemotePeer *remotePeer = (BLERemotePeer*)peer;
-                    [BLEDataReceipt setReceiptFor:remotePeer
-                                             data:message
-                                readWriteTransaction:transaction];
-                } else {
-                    DDLogWarn(@"Wrong class for peer");
-                }
+                [BLEDataReceipt setReceiptForPeer:(BLERemotePeer*)peer
+                                             data:(BLEMessage*)message
+                             readWriteTransaction:transaction];
                 
                 // A wild unique Message found!
                 BLERemotePeer *sender = [message senderWithTransaction:transaction];
@@ -169,6 +162,8 @@
             remotePeer.lastBroadcastDate = [NSDate date];
             remotePeer.numberOfTimesBroadcast = remotePeer.numberOfTimesBroadcast + 1;
             [transaction setObject:remotePeer forKey:key inCollection:collection];
+            BLERemotePeer *toPeer = (BLERemotePeer*)peer;
+            [BLEDataReceipt setReceiptForPeer:toPeer data:outgoingPeer readWriteTransaction:transaction];
         }];
     } else {
         DDLogError(@"Wrong peer class: %@", identity);
@@ -194,6 +189,8 @@
             message.lastBroadcastDate = [NSDate date];
             message.numberOfTimesBroadcast = message.numberOfTimesBroadcast + 1;
             [transaction setObject:message forKey:key inCollection:collection];
+            BLERemotePeer *remotePeer = (BLERemotePeer*)peer;
+            [BLEDataReceipt setReceiptForPeer:remotePeer data:message readWriteTransaction:transaction];
         }];
     } else {
         DDLogError(@"Wrong message class: %@", message);
