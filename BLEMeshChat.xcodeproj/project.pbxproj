@@ -31,6 +31,8 @@
 		D9C4261119E8A52B004F7335 /* BLEBroadcaster.m in Sources */ = {isa = PBXBuildFile; fileRef = D9C4261019E8A52B004F7335 /* BLEBroadcaster.m */; };
 		D9C4261319E8A617004F7335 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9C4261219E8A617004F7335 /* CoreBluetooth.framework */; };
 		D9D828E619F4F6DE004266F6 /* BLETransportStorage.m in Sources */ = {isa = PBXBuildFile; fileRef = D9D828E519F4F6DE004266F6 /* BLETransportStorage.m */; };
+		D9F49A661A0EE3D80035B1C8 /* BLEDataReceipt.m in Sources */ = {isa = PBXBuildFile; fileRef = D9F49A651A0EE3D80035B1C8 /* BLEDataReceipt.m */; };
+		D9F49A6A1A0EED030035B1C8 /* BLETransport.m in Sources */ = {isa = PBXBuildFile; fileRef = D9F49A691A0EED030035B1C8 /* BLETransport.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -72,8 +74,6 @@
 		D99FEAB719EFB66F003AE5CF /* BLEIdentityPacket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLEIdentityPacket.m; sourceTree = "<group>"; };
 		D99FEAB919F0641B003AE5CF /* BLETransportManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLETransportManager.h; sourceTree = "<group>"; };
 		D99FEABA19F0641B003AE5CF /* BLETransportManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLETransportManager.m; sourceTree = "<group>"; };
-		D9B2DFB31A05D08C0004D36C /* BLEDataParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLEDataParser.h; sourceTree = "<group>"; };
-		D9B2DFB41A05D49B0004D36C /* BLEDataProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLEDataProvider.h; sourceTree = "<group>"; };
 		D9BE2D3019EA0C3A00A7A82F /* BLEDatabaseManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLEDatabaseManager.h; sourceTree = "<group>"; };
 		D9BE2D3119EA0C3A00A7A82F /* BLEDatabaseManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLEDatabaseManager.m; sourceTree = "<group>"; };
 		D9C425DE19E89D9D004F7335 /* BLEMeshChat.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BLEMeshChat.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -96,6 +96,11 @@
 		D9D828E319F2F71C004266F6 /* BLEYapObjectProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLEYapObjectProtocol.h; sourceTree = "<group>"; };
 		D9D828E419F4F6DE004266F6 /* BLETransportStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLETransportStorage.h; sourceTree = "<group>"; };
 		D9D828E519F4F6DE004266F6 /* BLETransportStorage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLETransportStorage.m; sourceTree = "<group>"; };
+		D9F49A641A0EE3D80035B1C8 /* BLEDataReceipt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLEDataReceipt.h; sourceTree = "<group>"; };
+		D9F49A651A0EE3D80035B1C8 /* BLEDataReceipt.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLEDataReceipt.m; sourceTree = "<group>"; };
+		D9F49A681A0EED030035B1C8 /* BLETransport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLETransport.h; sourceTree = "<group>"; };
+		D9F49A691A0EED030035B1C8 /* BLETransport.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLETransport.m; sourceTree = "<group>"; };
+		D9F49A6B1A0EED450035B1C8 /* BLEDataStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLEDataStorage.h; sourceTree = "<group>"; };
 		E1441CDBDA6F311CDCBA029F /* Pods.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.release.xcconfig; path = "Pods/Target Support Files/Pods/Pods.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -149,6 +154,7 @@
 		D90CF5F119ECC0C6006222AB /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				D9F49A671A0EE3E10035B1C8 /* Transport Receipts */,
 				D9D828E319F2F71C004266F6 /* BLEYapObjectProtocol.h */,
 				D931878E19F5D46B000D2F8A /* BLETransportStats.h */,
 				D99FEAA819EF3E0F003AE5CF /* BLELocalPeer.h */,
@@ -186,14 +192,10 @@
 		D99FEABC19F0641F003AE5CF /* Transport */ = {
 			isa = PBXGroup;
 			children = (
-				D9B2DFB31A05D08C0004D36C /* BLEDataParser.h */,
-				D9B2DFB41A05D49B0004D36C /* BLEDataProvider.h */,
+				D9F49A6B1A0EED450035B1C8 /* BLEDataStorage.h */,
 				D99FEAB919F0641B003AE5CF /* BLETransportManager.h */,
 				D99FEABA19F0641B003AE5CF /* BLETransportManager.m */,
-				D9C4260C19E8A513004F7335 /* BLEScanner.h */,
-				D9C4260D19E8A513004F7335 /* BLEScanner.m */,
-				D9C4260F19E8A52B004F7335 /* BLEBroadcaster.h */,
-				D9C4261019E8A52B004F7335 /* BLEBroadcaster.m */,
+				D9F49A6C1A0EF3050035B1C8 /* Transport */,
 			);
 			name = Transport;
 			sourceTree = "<group>";
@@ -296,6 +298,28 @@
 				D9C425F019E89D9D004F7335 /* LaunchScreen.xib */,
 			);
 			name = Resources;
+			sourceTree = "<group>";
+		};
+		D9F49A671A0EE3E10035B1C8 /* Transport Receipts */ = {
+			isa = PBXGroup;
+			children = (
+				D9F49A641A0EE3D80035B1C8 /* BLEDataReceipt.h */,
+				D9F49A651A0EE3D80035B1C8 /* BLEDataReceipt.m */,
+			);
+			name = "Transport Receipts";
+			sourceTree = "<group>";
+		};
+		D9F49A6C1A0EF3050035B1C8 /* Transport */ = {
+			isa = PBXGroup;
+			children = (
+				D9C4260C19E8A513004F7335 /* BLEScanner.h */,
+				D9C4260D19E8A513004F7335 /* BLEScanner.m */,
+				D9C4260F19E8A52B004F7335 /* BLEBroadcaster.h */,
+				D9C4261019E8A52B004F7335 /* BLEBroadcaster.m */,
+				D9F49A681A0EED030035B1C8 /* BLETransport.h */,
+				D9F49A691A0EED030035B1C8 /* BLETransport.m */,
+			);
+			name = Transport;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -450,8 +474,10 @@
 				D9C425E719E89D9D004F7335 /* BLEAppDelegate.m in Sources */,
 				D9BE2D3219EA0C3A00A7A82F /* BLEDatabaseManager.m in Sources */,
 				D9C425E419E89D9D004F7335 /* main.m in Sources */,
+				D9F49A661A0EE3D80035B1C8 /* BLEDataReceipt.m in Sources */,
 				D97B7B9919F5D3C2000E1B8B /* BLERemotePeerTableViewController.m in Sources */,
 				D99FEAAD19EF4071003AE5CF /* BLEDataPacket.m in Sources */,
+				D9F49A6A1A0EED030035B1C8 /* BLETransport.m in Sources */,
 				D90CF5EB19EC8DD8006222AB /* BLEMessagesViewController.m in Sources */,
 				D9D828E619F4F6DE004266F6 /* BLETransportStorage.m in Sources */,
 				D90CF5E819EC8D3C006222AB /* BLEMessage.m in Sources */,

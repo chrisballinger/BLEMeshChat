@@ -8,6 +8,8 @@
 
 #import "BLEBroadcaster.h"
 #import "BLECrypto.h"
+#import "BLEMessagePacket.h"
+#import "BLEIdentityPacket.h"
 
 static NSString * const kBLEBroadcasterRestoreIdentifier = @"kBLEBroadcasterRestoreIdentifier";
 
@@ -34,28 +36,17 @@ static NSString * const kBLEMessagesWriteCharacteristicUUIDString = @"6EAEC220-5
  */
 @property (nonatomic, strong) NSMutableDictionary *payloadCache;
 
-@property (nonatomic, strong) BLEKeyPair *keyPair;
 
 @property (nonatomic, strong) NSMutableDictionary *identitiesToCentralCache;
 @end
 
 @implementation BLEBroadcaster
 
-- (instancetype) initWithKeyPair:(BLEKeyPair*)keyPair
-                        delegate:(id<BLEBroadcasterDelegate>)delegate
-                   delegateQueue:(dispatch_queue_t)delegateQueue                       dataParser:(id<BLEDataParser>)dataParser
-                    dataProvider:(id<BLEDataProvider>)dataProvider {
-    if (self = [super init]) {
-        _keyPair = keyPair;
+- (instancetype) initWithDataStorage:(id<BLEDataStorage>)dataStorage
+
+ {
+    if (self = [super initWithDataStorage:dataStorage]) {
         _eventQueue = dispatch_queue_create("BLEBroadcaster Event Queue", 0);
-        if (!delegateQueue) {
-            _delegateQueue = dispatch_queue_create("BLEBroadcaster Delegate Queue", 0);
-        } else {
-            _delegateQueue = delegateQueue;
-        }
-        _delegate = delegate;
-        _dataParser = dataParser;
-        _dataProvider = dataProvider;
         _peripheralManager = [[CBPeripheralManager alloc] initWithDelegate:self
                                                                      queue:_eventQueue
                                                                    options:@{CBPeripheralManagerOptionRestoreIdentifierKey: kBLEBroadcasterRestoreIdentifier,
@@ -66,7 +57,7 @@ static NSString * const kBLEMessagesWriteCharacteristicUUIDString = @"6EAEC220-5
     return self;
 }
 
-- (BOOL) startBroadcasting {
+- (BOOL) start {
     if (self.peripheralManager.state == CBPeripheralManagerStatePoweredOn) {
         if (!self.meshChatService) {
             self.meshChatService = [[CBMutableService alloc] initWithType:[BLEBroadcaster meshChatServiceUUID] primary:YES];
@@ -108,7 +99,7 @@ static NSString * const kBLEMessagesWriteCharacteristicUUIDString = @"6EAEC220-5
     return NO;
 }
 
-- (void) stopBroadcasting {
+- (void) stop {
     [self.peripheralManager stopAdvertising];
 }
 
@@ -140,7 +131,7 @@ static NSString * const kBLEMessagesWriteCharacteristicUUIDString = @"6EAEC220-5
 - (void)peripheralManagerDidUpdateState:(CBPeripheralManager *)peripheral {
     DDLogVerbose(@"%@: %@ %d", THIS_FILE, THIS_METHOD, (int)peripheral.state);
     if (peripheral.state == CBPeripheralManagerStatePoweredOn) {
-        [self startBroadcasting];
+        [self start];
     }
 }
 
@@ -201,6 +192,11 @@ static NSString * const kBLEMessagesWriteCharacteristicUUIDString = @"6EAEC220-5
     return identity;
 }
 
+- (void) setIdentity:(BLEIdentityPacket*)identity
+          forCentral:(CBCentral*)central {
+    [self.identitiesToCentralCache setObject:identity forKey:central.identifier];
+}
+
 - (void)peripheralManager:(CBPeripheralManager *)peripheral didReceiveReadRequest:(CBATTRequest *)request {
     CBUUID *requestUUID = request.characteristic.UUID;
     NSData *responseData = nil;
@@ -216,28 +212,33 @@ static NSString * const kBLEMessagesWriteCharacteristicUUIDString = @"6EAEC220-5
         if (request.offset > 0) {
             responseData = [self.payloadCache objectForKey:requestUUID];
         } else {
-            BLEMessagePacket *messagePacket = [self.dataProvider nextOutgoingMessageForPeer:peer];
+            BLEMessagePacket *messagePacket = [self.dataStorage transport:self nextOutgoingMessageForPeer:peer];
             if (!messagePacket) {
                 return;
             }
             responseData = [messagePacket packetData];
+            BOOL shouldSendData = YES;
+            if (peer) {
+                
+                // Don't send dupe packets
+                if (shouldSendData == NO) {
+                    return;
+                }
+            }
             [self.payloadCache setObject:responseData forKey:requestUUID];
-            dispatch_async(self.delegateQueue, ^{
-                [self.delegate broadcaster:self willWriteMessage:messagePacket toPeer:peer];
-            });
+            [self.dataStorage transport:self willWriteMessage:messagePacket toPeer:peer];
         }
         [self sendResponseToPeripheral:peripheral withRequest:request payload:responseData result:result];
         DDLogInfo(@"Peripheral Responding to message read with %d bytes", (int)responseData.length);
     } else if ([requestUUID isEqual:self.identityReadCharacteristic.UUID]) {
         BLEIdentityPacket *centralPeer = [self identityForCentral:central];
-        BLEIdentityPacket *identity = [self.dataProvider nextOutgoingIdentityForPeer:centralPeer];
+        
+        BLEIdentityPacket *identity = [self.dataStorage transport:self nextOutgoingIdentityForPeer:centralPeer];
         if (identity) {
             result = CBATTErrorSuccess; // For now let the remote central decide when to stop re-issuing idenetity requests
             responseData = [identity packetData];
             [_payloadCache setObject:responseData forKey:requestUUID]; // We shouldn't ever have to packetize identity responses in the v1 protocol
-            dispatch_async(self.delegateQueue, ^{
-                [self.delegate broadcaster:self willWriteIdentity:identity toPeer:centralPeer];
-            });
+                [self.dataStorage transport:self willWriteIdentity:identity toPeer:centralPeer];
             DDLogInfo(@"Peripheral Responding to id read with %d bytes", (int)responseData.length);
         } else {
             DDLogInfo(@"No more identities to send");
@@ -290,24 +291,20 @@ static NSString * const kBLEMessagesWriteCharacteristicUUIDString = @"6EAEC220-5
             if (fullPacketData) {
                 DDLogInfo(@"Peripheral received complete message write!");
                 // We've received a complete message
-                BLEMessagePacket *message = [self.dataParser messageForMessageData:fullPacketData];
+                BLEMessagePacket *message = [self.dataStorage transport:self messageForMessageData:fullPacketData];
                 BLEIdentityPacket *centralPeer = [self identityForCentral:central];
-                dispatch_async(self.delegateQueue, ^{
-                    [self.delegate broadcaster:self receivedMessage:message fromPeer:centralPeer];
-                });
+                [self.dataStorage transport:self receivedMessage:message fromPeer:centralPeer];
             }
         } else if ([uuid isEqual:self.identityWriteCharacteristic.UUID]) {
             // Identities never need packetization
             result = CBATTErrorSuccess;
             BLEIdentityPacket *centralPeer = [self identityForCentral:central];
-            BLEIdentityPacket *incomingIdentity = [self.dataParser identityForIdentityData:requestData];
+            BLEIdentityPacket *incomingIdentity = [self.dataStorage transport:self identityForIdentityData:requestData];
             if (!centralPeer) {
-                [self.identitiesToCentralCache setObject:incomingIdentity forKey:central.identifier];
+                [self setIdentity:incomingIdentity forCentral:central];
                 centralPeer = incomingIdentity;
             }
-            dispatch_async(self.delegateQueue, ^{
-                [self.delegate broadcaster:self receivedIdentity:incomingIdentity fromPeer:centralPeer];
-            });
+            [self.dataStorage transport:self receivedIdentity:incomingIdentity fromPeer:centralPeer];
         } else {
             DDLogError(@"Peripheral unrecognized write: %@", request.value);
         }

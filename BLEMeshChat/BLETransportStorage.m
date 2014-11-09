@@ -11,28 +11,50 @@
 #import "BLERemotePeer.h"
 #import "BLEDatabaseManager.h"
 #import "BLELocalPeer.h"
+#import "BLEDataReceipt.h"
 
 @interface BLETransportStorage()
-@property (nonatomic, strong) YapDatabaseConnection *messagesReadConnection;
-@property (nonatomic, strong) YapDatabaseConnection *identitiesReadConnection;
-
-@property (nonatomic, strong) NSMutableDictionary *identityCache;
+@property (nonatomic, strong) YapDatabaseConnection *readConnection;
+// identityCache may be accessed from broadcaster or scanner on different queues
+@property (atomic, strong) NSMutableDictionary *identityCache;
 @end
 
 @implementation BLETransportStorage
 
 - (instancetype) init {
     if (self = [super init]) {
-        self.messagesReadConnection = [[BLEDatabaseManager sharedInstance].database newConnection];
-        self.identitiesReadConnection = [[BLEDatabaseManager sharedInstance].database newConnection];
+        self.readConnection = [[BLEDatabaseManager sharedInstance].database newConnection];
         _identityCache = [NSMutableDictionary dictionary];
     }
     return self;
 }
 
-#pragma mark BLEDataParser methods
+/** Return NO if you've already sent this data to a peer */
+- (BOOL) shouldWriteData:(BLEDataPacket*)data
+            toPeer:(BLEIdentityPacket*)peer {
+    NSAssert(data != nil, @"Data shouldn't be nil");
+    NSAssert(peer != nil, @"Peer shouldn't be nil");
+    if (!data || !peer) {
+        return NO;
+    }
+    __block BOOL shouldWriteData = YES;
+    id<BLEYapObjectProtocol> remotePeer = (id<BLEYapObjectProtocol>)peer;
+    id<BLEYapObjectProtocol> outgoingData = (id<BLEYapObjectProtocol>)data;
+    
+    [self.readConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+        BOOL receiptExists = [BLEDataReceipt receiptExistsForPeer:remotePeer data:outgoingData readTransaction:transaction];
+        if (receiptExists) {
+            shouldWriteData = NO;
+        }
+    }];
+    return shouldWriteData;
+}
 
-- (BLEIdentityPacket*) identityForIdentityData:(NSData*)identityData {
+#pragma mark BLEDataStorage methods
+
+/** Override this if you are using a custom subclass of BLEIdentityPacket */
+- (BLEIdentityPacket*) transport:(BLETransport*)transport
+         identityForIdentityData:(NSData*)identityData {
     NSError *error = nil;
     BLERemotePeer *identity = [[BLERemotePeer alloc] initWithPacketData:identityData error:&error];
     if (error) {
@@ -42,7 +64,9 @@
     return identity;
 }
 
-- (BLEMessagePacket*) messageForMessageData:(NSData*)messageData {
+/** Override this if you are using a custom subclass of BLEMessagePacket */
+- (BLEMessagePacket*) transport:(BLETransport*)transport
+          messageForMessageData:(NSData*)messageData {
     NSError *error = nil;
     BLEMessage *message = [[BLEMessage alloc] initWithPacketData:messageData error:&error];
     if (error) {
@@ -52,11 +76,10 @@
     return message;
 }
 
-#pragma mark BLETransportManagerDelegate methods
-
-- (void) transportManager:(BLETransportManager*)transportManager
-         receivedIdentity:(BLEIdentityPacket*)identity
-                 fromPeer:(BLEIdentityPacket*)peer {
+/** Called when new identities are discovered from a peer */
+- (void) transport:(BLETransport*)transport
+  receivedIdentity:(BLEIdentityPacket*)identity
+          fromPeer:(BLEIdentityPacket*)peer {
     if ([identity isKindOfClass:[BLERemotePeer class]]) {
         BLERemotePeer *incomingPeer = (BLERemotePeer*)identity;
         NSString *key = incomingPeer.yapKey;
@@ -86,9 +109,9 @@
 }
 
 /** Called when new messages are discovered from a peer */
-- (void) transportManager:(BLETransportManager*)transportManager
-          receivedMessage:(BLEMessagePacket*)message
-                 fromPeer:(BLEIdentityPacket*)peer {
+- (void) transport:(BLETransport*)transport
+   receivedMessage:(BLEMessagePacket*)message
+          fromPeer:(BLEIdentityPacket*)peer {
     if ([message isKindOfClass:[BLEMessage class]]) {
         BLEMessage *incomingMessage = (BLEMessage*)message;
         NSString *key = incomingMessage.yapKey;
@@ -100,6 +123,15 @@
             } else {
                 // new message received
                 message = incomingMessage;
+                
+                if ([peer isKindOfClass:[BLERemotePeer class]]) {
+                    BLERemotePeer *remotePeer = (BLERemotePeer*)peer;
+                    [BLEDataReceipt setReceiptFor:remotePeer
+                                             data:message
+                                readWriteTransaction:transaction];
+                } else {
+                    DDLogWarn(@"Wrong class for peer");
+                }
                 
                 // A wild unique Message found!
                 BLERemotePeer *sender = [message senderWithTransaction:transaction];
@@ -118,9 +150,10 @@
     }
 }
 
-- (void) transportManager:(BLETransportManager*)transportManager
-        willWriteIdentity:(BLEIdentityPacket*)identity
-                   toPeer:(BLEIdentityPacket*)peer {
+/** Called before identities are written to a peer */
+- (void) transport:(BLETransport*)transport
+ willWriteIdentity:(BLEIdentityPacket*)identity
+            toPeer:(BLEIdentityPacket*)peer {
     if ([identity isKindOfClass:[BLERemotePeer class]]) {
         BLERemotePeer *outgoingPeer = (BLERemotePeer*)identity;
         NSString *key = outgoingPeer.yapKey;
@@ -142,9 +175,10 @@
     }
 }
 
-- (void) transportManager:(BLETransportManager*)transportManager
-         willWriteMessage:(BLEMessagePacket*)message
-                   toPeer:(BLEIdentityPacket*)peer {
+/** Called before messages are written to a peer */
+- (void) transport:(BLETransport*)transport
+  willWriteMessage:(BLEMessagePacket*)message
+            toPeer:(BLEIdentityPacket*)peer {
     if ([message isKindOfClass:[BLEMessage class]]) {
         BLEMessage *outgoingMessage = (BLEMessage*)message;
         NSString *key = outgoingMessage.yapKey;
@@ -167,45 +201,54 @@
 }
 
 /** Called when a peer is requesting outgoing messages from you */
-- (BLEMessagePacket*) nextOutgoingMessageForPeer:(BLEIdentityPacket*)peer {
+- (BLEMessagePacket*) transport:(BLETransport*)transport
+     nextOutgoingMessageForPeer:(BLEIdentityPacket*)peer {
     __block BLEMessagePacket *message = nil;
     BLELocalPeer *myIdentity = [BLELocalPeer primaryIdentity];
     NSString *myBase64PublicKey = [myIdentity.senderPublicKey base64EncodedStringWithOptions:0];
     
-    [self.messagesReadConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+    [self.readConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
         YapDatabaseViewTransaction *viewTransaction = [transaction ext:[BLEDatabaseManager sharedInstance].outgoingMessagesViewName];
         message =  [viewTransaction firstObjectInGroup:myBase64PublicKey];
     }];
+    BOOL shouldSend = [self shouldWriteData:message toPeer:peer];
+    if (!shouldSend) {
+        DDLogVerbose(@"Already sent message %@ to peer %@", message, peer);
+        return nil;
+    }
     DDLogVerbose(@"Fetched outgoing message %@ for peer %@", message, peer);
     return message;
 }
 
 /** Called when a peer is requesting outgoing identities from you */
-- (BLEIdentityPacket*) nextOutgoingIdentityForPeer:(BLEIdentityPacket*)peer {
+- (BLEIdentityPacket*) transport:(BLETransport*)transport
+     nextOutgoingIdentityForPeer:(BLEIdentityPacket*)peer {
     __block BLEIdentityPacket *identity = nil;
     
     BLEIdentityPacket *sentIdentity = [self.identityCache objectForKey:peer];
     if (sentIdentity) {
-        return nil;
-    }
-    
-    // always return primary identity for now
-    identity = [BLELocalPeer primaryIdentity];
-    if (identity) {
-        if (peer) {
-            [self.identityCache setObject:identity forKey:peer];
+        [self.readConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+            YapDatabaseViewTransaction *viewTransaction = [transaction ext:[BLEDatabaseManager sharedInstance].outgoingPeersViewName];
+            identity = [viewTransaction firstObjectInGroup:@"all"];
+        }];
+        DDLogVerbose(@"Fetched outgoing identity %@ for peer %@", identity, peer);
+        BOOL shouldSend = [self shouldWriteData:identity toPeer:peer];
+        if (!shouldSend) {
+            DDLogVerbose(@"Already sent identity %@ to peer %@", identity, peer);
+            return nil;
         }
         return identity;
+    } else {
+        // always return primary identity for now
+        identity = [BLELocalPeer primaryIdentity];
+        if (identity) {
+            if (peer) {
+                [self.identityCache setObject:identity forKey:peer];
+            }
+            return identity;
+        }
     }
     return nil;
-    /*
-     [self.identitiesReadConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
-        YapDatabaseViewTransaction *viewTransaction = [transaction ext:[BLEDatabaseManager sharedInstance].outgoingPeersViewName];
-        identity = [viewTransaction firstObjectInGroup:@"all"];
-    }];
-    DDLogVerbose(@"Fetched outgoing identity %@ for peer %@", identity, peer);
-    return identity;
-     */
 }
 
 @end

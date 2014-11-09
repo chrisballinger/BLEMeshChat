@@ -54,9 +54,8 @@
         [BLELocalPeer setPrimaryIdentity:localPeer];
     }
     self.transportStorage = [[BLETransportStorage alloc] init];
-    self.transportManager = [[BLETransportManager alloc] initWithKeyPair:keyPair delegate:self.transportStorage delegateQueue:nil dataProvider:self.transportStorage];
-    self.transportManager.dataParser = self.transportStorage;
-        
+    self.transportManager = [[BLETransportManager alloc] initWithDataStorage:self.transportStorage];
+    
     if ([[UIApplication sharedApplication] respondsToSelector:@selector(registerUserNotificationSettings:)]) {
         UIUserNotificationSettings *notificationSettings = [UIUserNotificationSettings settingsForTypes:UIUserNotificationTypeAlert | UIUserNotificationTypeSound categories:nil];
         [[UIApplication sharedApplication] registerUserNotificationSettings:notificationSettings];

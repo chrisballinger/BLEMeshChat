@@ -24,6 +24,9 @@
         NSString *databaseName = @"BLEMeshChat.sqlite";
         NSString *databasePath = [databaseDirectoryPath stringByAppendingPathComponent:databaseName];
         _database = [[YapDatabase alloc] initWithPath:databasePath];
+        self.database.defaultObjectCacheEnabled = YES;
+        self.database.defaultObjectCacheLimit = 5000;
+        self.database.defaultObjectPolicy = YapDatabasePolicyShare;
         _readWriteConnection = [self.database newConnection];
         _readConnection = [self.database newConnection];
         [self registerViews];
