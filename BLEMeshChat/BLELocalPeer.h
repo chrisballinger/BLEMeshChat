@@ -11,7 +11,7 @@
 
 extern NSString * const kBLEPrimaryLocalPeerKey;
 
-@interface BLELocalPeer : BLEIdentityPacket <BLEYapObjectProtocol>
+@interface BLELocalPeer : BLERemotePeer
 
 // static properties
 /** Ed25519 private key */

@@ -6,15 +6,15 @@ PODS:
     - CocoaLumberjack/Core
   - FormatterKit/TimeIntervalFormatter (1.7.2)
   - IGIdenticon (0.2.1)
-  - InAppSettingsKit (2.1)
-  - JSQMessagesViewController (6.0-beta6):
+  - InAppSettingsKit (2.2.1)
+  - JSQMessagesViewController (6.0.0):
     - JSQSystemSoundPlayer (~> 2.0.0)
   - JSQSystemSoundPlayer (2.0.0)
   - libsodium (1.0.0)
   - Mantle (1.5.1):
     - Mantle/extobjc
   - Mantle/extobjc (1.5.1)
-  - PureLayout (2.0.1)
+  - PureLayout (2.0.2)
   - YapDatabase (2.5.3):
     - YapDatabase/standard
   - YapDatabase/common (2.5.3):
@@ -25,17 +25,14 @@ PODS:
 DEPENDENCIES:
   - FormatterKit/TimeIntervalFormatter (~> 1.6)
   - IGIdenticon (~> 0.2.0)
-  - InAppSettingsKit (~> 2.1)
-  - JSQMessagesViewController (from `https://github.com/jessesquires/JSQMessagesViewController.git`, branch `develop`)
+  - InAppSettingsKit (~> 2.2)
+  - JSQMessagesViewController (~> 6.0)
   - libsodium (from `Podspecs/libsodium.podspec.json`)
   - Mantle (~> 1.4)
   - PureLayout (~> 2.0)
   - YapDatabase (~> 2.5)
 
 EXTERNAL SOURCES:
-  JSQMessagesViewController:
-    :branch: develop
-    :git: https://github.com/jessesquires/JSQMessagesViewController.git
   libsodium:
     :podspec: Podspecs/libsodium.podspec.json
 
@@ -43,12 +40,12 @@ SPEC CHECKSUMS:
   CocoaLumberjack: 205769c032b5fef85b92472046bcc8b7e7c8a817
   FormatterKit: 230f6ae7a6e9ac468cb09b3ac2b7524effc8daaa
   IGIdenticon: e644cd0e5a41a86082ab4c06221ca5bf45ea70bb
-  InAppSettingsKit: 853cdc9fcc76b87a4694f8d2b930e116463b5a29
-  JSQMessagesViewController: 960a09d11978bea52d1a676e97980838f8d98652
+  InAppSettingsKit: 1d23ffbc68f628fb5d6fce0c2eed46ac6b4f3ce7
+  JSQMessagesViewController: 61c8defbe86f3859f796146f082f8231dad8de66
   JSQSystemSoundPlayer: c98443b1cbb3b45db09d0d3d6c2355cf78294981
   libsodium: ff93a5e950b3f7cad2beb6fedaca768af6ede801
   Mantle: d7c5ac734579ec751c58fecbf56189853056c58c
-  PureLayout: 12eca5b6dc94f1a03fdf255d640604584ff1b55b
+  PureLayout: 03fe8d5ab68f5871038b3b7065d28ac880d5f2a0
   YapDatabase: 096e860167b04e629b88bea33dfb7a4153279bb0
 
 COCOAPODS: 0.34.4

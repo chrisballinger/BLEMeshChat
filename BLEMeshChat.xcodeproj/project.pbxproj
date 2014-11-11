@@ -600,13 +600,12 @@
 			baseConfigurationReference = 2D1361F7F24E9C6CD2AF9A4B /* Pods.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "iPhone Developer: Chris Ballinger (9P62QGET7G)";
 				GCC_PREFIX_HEADER = BLEMeshChat/PrefixHeader.pch;
 				INFOPLIST_FILE = BLEMeshChat/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "dbbba898-7c60-4cf8-83ed-4b0cc1a7a08b";
 			};
 			name = Debug;
 		};
@@ -615,13 +614,12 @@
 			baseConfigurationReference = E1441CDBDA6F311CDCBA029F /* Pods.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "iPhone Distribution: Chris Ballinger (4T8JLQR6GR)";
 				GCC_PREFIX_HEADER = BLEMeshChat/PrefixHeader.pch;
 				INFOPLIST_FILE = BLEMeshChat/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "dbbba898-7c60-4cf8-83ed-4b0cc1a7a08b";
 			};
 			name = Release;
 		};
