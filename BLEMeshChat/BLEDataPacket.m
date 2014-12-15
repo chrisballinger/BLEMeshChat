@@ -34,8 +34,6 @@ const NSUInteger kBLEDataPacketSenderPublicKeyOffset = kBLEDataPacketTimestampOf
             return nil;
         }
         BOOL validSig = [self hasValidSignature];
-#warning Disabling Signature Verification
-        validSig = YES;
         if (!validSig) {
             if (error) {
                 *error = [NSError errorWithDomain:@"BLEDataPacketParseError" code:101 userInfo:@{NSLocalizedDescriptionKey: @"Packet data has invalid signature"}];
@@ -59,7 +57,7 @@ const NSUInteger kBLEDataPacketSenderPublicKeyOffset = kBLEDataPacketTimestampOf
     _senderPublicKey = [packetData subdataWithRange:NSMakeRange(kBLEDataPacketSenderPublicKeyOffset, kBLECryptoEd25519PublicKeyLength)];
     
     NSUInteger dataOffset = kBLEDataPacketSenderPublicKeyOffset + kBLECryptoEd25519PublicKeyLength;
-    NSUInteger signatureOffset = packetData.length - kBLECryptoEd25519SignatureLength - 1;
+    NSUInteger signatureOffset = packetData.length - kBLECryptoEd25519SignatureLength;
 
     NSUInteger dataLength = signatureOffset - dataOffset;
     
