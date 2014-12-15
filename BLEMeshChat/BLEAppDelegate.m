@@ -47,7 +47,7 @@
             publicName = NSLocalizedString(@"Test User", nil);
         }
         if (!keyPair) {
-            DDLogWarn(@"No existing keys found, generation new ones");
+            DDLogWarn(@"No existing keys found, generating new ones");
             keyPair = [BLEKeyPair keyPairWithType:BLEKeyTypeEd25519];
         }
         localPeer = [[BLELocalPeer alloc] initWithDisplayName:publicName keyPair:keyPair];
