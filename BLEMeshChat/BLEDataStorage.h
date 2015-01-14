@@ -12,6 +12,7 @@
 @class BLEIdentityPacket;
 @class BLEMessagePacket;
 @class BLEDataPacket;
+@class BLERemotePeer;
 
 /** Hook this up to some persistent storage */
 @protocol BLEDataStorage <NSObject>
@@ -29,14 +30,23 @@
    receivedMessage:(BLEMessagePacket*)message
           fromPeer:(BLEIdentityPacket*)peer;
 
+/** Called when a new device is seen */
+- (BLERemotePeer*) transport:(BLETransport*)transport
+               peerForDevice:(id)device;
+
+/** Called when an identity is seen */
+- (BLERemotePeer*) transport:(BLETransport *)transport
+                 addIdentity:(NSData*)identity
+                     forPeer:(BLERemotePeer*)peer;
+
 /***** Outgoing Data ******/
 
 /**
  *  Called when a peer is requesting outgoing identities from you,
  *  if nil we are finished
  */
-- (BLEIdentityPacket*) transport:(BLETransport*)transport
-     nextOutgoingIdentityForPeer:(BLEIdentityPacket*)peer;
+- (BLERemotePeer*) transport:(BLETransport*)transport
+     nextOutgoingIdentityForPeer:(BLERemotePeer*)peer;
 
 /**
  *  Called when a peer is requesting outgoing messages from you,
@@ -44,6 +54,9 @@
  */
 - (BLEMessagePacket*) transport:(BLETransport*)transport
      nextOutgoingMessageForPeer:(BLEIdentityPacket*)peer;
+
+/** Called when a peer is requesting all outgoing messages from you */
+- (void)transport:(BLETransport *)transport getAllOutgoingMessagesForPeer:(BLEIdentityPacket *)peer success:(void(^)(NSArray *messages))success;
 
 /** Called before messages are written to a peer */
 - (void) transport:(BLETransport*)transport

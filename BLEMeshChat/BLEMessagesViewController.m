@@ -15,6 +15,7 @@
 #import "UIColor+JSQMessages.h"
 #import "BLERemotePeerTableViewController.h"
 #import "IASKAppSettingsViewController.h"
+#import "BLETransportManager.h"
 
 @interface BLEMessagesViewController()
 @property (nonatomic, strong, readonly) YapDatabaseConnection *readConnection;
@@ -94,6 +95,7 @@
     [[BLEDatabaseManager sharedInstance].readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
         [transaction setObject:message forKey:key inCollection:collection];
     } completionBlock:^{
+        [[BLETransportManager sharedManager] sendMessage];
         [self finishSendingMessage];
     }];
 }

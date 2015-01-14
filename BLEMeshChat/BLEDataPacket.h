@@ -34,6 +34,7 @@
 
 /** Outgoing Data */
 - (instancetype) initWithPayloadData:(NSData*)payloadData keyPair:(BLEKeyPair*)keyPair;
+- (void)loadPacketData:(NSData*)packetData error:(NSError**)error;
 
 @end
 
