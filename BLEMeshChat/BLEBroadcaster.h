@@ -16,4 +16,8 @@
 + (CBUUID*) identityReadCharacteristicUUID;
 + (CBUUID*) identityWriteCharacteristicUUID;
 
+- (void)writeMessage:(NSData*)data forPeer:(BLERemotePeer*)peer;
+- (void)sendMessagesToPeer:(BLERemotePeer*)peer;
+
+
 @end

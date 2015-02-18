@@ -10,4 +10,9 @@
 
 @interface BLEScanner : BLETransport <CBCentralManagerDelegate, CBPeripheralDelegate>
 
+- (void)writeMessage:(NSData*)data forPeer:(BLERemotePeer*)peer onCharacteristic:(NSString*)characteristic;
+- (void)sendMessagesToPeer:(BLERemotePeer*)peer;
+- (void)disconnectFrom:(CBPeripheral*)peripheral;
+- (void)connectTo:(CBPeripheral*)peripheral;
+
 @end

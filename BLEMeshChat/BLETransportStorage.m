@@ -47,6 +47,53 @@
 
 #pragma mark BLEDataStorage methods
 
+- (BLERemotePeer*) transport:(BLETransport*)transport
+               peerForDevice:(id)device {
+    CBUUID *identifier = (CBUUID*)[device identifier];
+    NSString *idOfDevice = identifier.UUIDString;
+    BLERemotePeer __block *remotePeer;
+    [[BLEDatabaseManager sharedInstance].readWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        [transaction enumerateKeysInCollection:[BLERemotePeer yapCollection] usingBlock:^(NSString *key, BOOL *stop) {
+            BLERemotePeer *peer = [transaction objectForKey:key inCollection:[BLERemotePeer yapCollection]];
+            if ([[peer deviceID] isEqualToString:idOfDevice]) {
+                remotePeer = peer;
+                [remotePeer addDevice:device];
+                *stop = YES;
+            }
+        }];
+        if (!remotePeer) {
+            remotePeer = [[BLERemotePeer alloc] initWithDevice:device];
+            [transaction setObject:remotePeer forKey:remotePeer.yapKey inCollection:[[remotePeer class] yapCollection]];
+        }
+    }];
+    return remotePeer;
+}
+
+- (BLERemotePeer*) transport:(BLETransport *)transport
+                 addIdentity:(NSData*)identity
+                     forPeer:(BLERemotePeer*)peer {
+    NSError *error;
+    NSString *oldKey = [peer yapKey];
+    [peer loadPacketData:identity error:&error];
+    BLERemotePeer __block *remotePeer;
+    [[BLEDatabaseManager sharedInstance].readWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        remotePeer = [transaction objectForKey:[remotePeer yapKey] inCollection:[[remotePeer class] yapCollection]];
+        if (remotePeer) {
+            remotePeer.deviceID = peer.deviceID;
+        } else {
+            [transaction setObject:peer forKey:[peer yapKey] inCollection:[[peer class] yapCollection]];
+            remotePeer = peer;
+        }
+        [BLEDataReceipt setReceiptForPeer:(BLERemotePeer*)peer
+                                     data:remotePeer
+                     readWriteTransaction:transaction];
+        remotePeer.lastReceivedDate = [NSDate date];
+        remotePeer.numberOfTimesReceived = remotePeer.numberOfTimesReceived + 1;
+        [transaction removeObjectForKey:oldKey inCollection:[[peer class] yapCollection]];
+    }];
+    return remotePeer;
+}
+
 /** Override this if you are using a custom subclass of BLEIdentityPacket */
 - (BLEIdentityPacket*) transport:(BLETransport*)transport
          identityForIdentityData:(NSData*)identityData {
@@ -197,6 +244,50 @@
     }
 }
 
+//Should use the YapDatabaseView to group the messages by {sender:you, sender: everyoneElse} first
+- (void)transport:(BLETransport *)transport getAllOutgoingMessagesForPeer:(BLEIdentityPacket *)peer success:(void(^)(NSArray *messages))success {
+    NSMutableArray __block *messages = [NSMutableArray array];
+    [[BLEDatabaseManager sharedInstance].readWriteConnection asyncReadWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        [transaction enumerateKeysInCollection:[[BLEMessage class] yapCollection] usingBlock:^(NSString *key, BOOL *stop) {
+            BLEMessage *message = [transaction objectForKey:key inCollection:[[BLEMessage class] yapCollection]];
+            //NSLog(@"possible messages to send: %@", message);
+            if ([self shouldWriteData:message toPeer:peer]) {
+                //NSLog(@"will actually send that message");
+                [messages addObject:message];
+            }
+        }];
+    } completionBlock:^() {
+        success(messages);
+    }];
+}
+
+/*
+- (NSArray*) transport:(BLETransport*)transport getAllOutgoingMessagesForPeer:(BLEIdentityPacket*)peer {
+    NSMutableArray *messages = [NSMutableArray array];
+    BLELocalPeer *myIdentity = [BLELocalPeer primaryIdentity];
+    NSString *myBase64PublicKey = [myIdentity.senderPublicKey base64EncodedStringWithOptions:0];
+    [self.readConnection readWithBlock:^(YapDatabaseReadTransaction *transaction) {
+        YapDatabaseViewTransaction *viewTransaction = [transaction ext:[BLEDatabaseManager sharedInstance].outgoingMessagesViewName];
+        [viewTransaction enumerateKeysInGroup:myBase64PublicKey usingBlock:^(NSString *collection, NSString *key, NSUInteger index, BOOL *stop) {
+            BLEMessage *message = [viewTransaction objectAtIndex:index inGroup:myBase64PublicKey];
+            if ([self shouldWriteData:message toPeer:peer]) {
+                [messages addObject:message];
+            }
+        }];
+        [viewTransaction enumerateGroupsUsingBlock:^(NSString *group, BOOL *stop) {
+            [viewTransaction enumerateKeysInGroup:group usingBlock:^(NSString *collection, NSString *key, NSUInteger index, BOOL *stop) {
+                BLEMessage *message = [viewTransaction objectAtIndex:index inGroup:myBase64PublicKey];
+                if ([self shouldWriteData:message toPeer:peer]) {
+                    [messages addObject:message];
+                }
+            }];
+        }];
+    }];
+    return messages;
+}
+*/
+         
+
 /** Called when a peer is requesting outgoing messages from you */
 - (BLEMessagePacket*) transport:(BLETransport*)transport
      nextOutgoingMessageForPeer:(BLEIdentityPacket*)peer {
@@ -218,8 +309,10 @@
 }
 
 /** Called when a peer is requesting outgoing identities from you */
-- (BLEIdentityPacket*) transport:(BLETransport*)transport
-     nextOutgoingIdentityForPeer:(BLEIdentityPacket*)peer {
+- (BLERemotePeer*) transport:(BLETransport*)transport
+     nextOutgoingIdentityForPeer:(BLERemotePeer*)peer {
+    
+    /*
     __block BLEIdentityPacket *identity = nil;
     
     BLEIdentityPacket *sentIdentity = [self.identityCache objectForKey:peer];
@@ -246,6 +339,9 @@
         }
     }
     return nil;
+    */
+    
+    return [BLELocalPeer primaryIdentity];
 }
 
 @end

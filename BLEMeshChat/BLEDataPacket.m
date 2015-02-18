@@ -26,22 +26,26 @@ const NSUInteger kBLEDataPacketSenderPublicKeyOffset = kBLEDataPacketTimestampOf
 
 - (instancetype) initWithPacketData:(NSData*)packetData error:(NSError**)error {
     if (self = [super init]) {
-        BOOL packetDataHasValidLength = [self parsePacketData:packetData];
-        if (!packetDataHasValidLength) {
-            if (error) {
-                *error = [NSError errorWithDomain:@"BLEDataPacketParseError" code:100 userInfo:@{NSLocalizedDescriptionKey: @"Packet data has invalid length"}];
-            }
-            return nil;
-        }
-        BOOL validSig = [self hasValidSignature];
-        if (!validSig) {
-            if (error) {
-                *error = [NSError errorWithDomain:@"BLEDataPacketParseError" code:101 userInfo:@{NSLocalizedDescriptionKey: @"Packet data has invalid signature"}];
-            }
-            return nil;
-        }
+        [self loadPacketData:packetData error:error];
     }
     return self;
+}
+
+- (void)loadPacketData:(NSData*)packetData error:(NSError**)error {
+    BOOL packetDataHasValidLength = [self parsePacketData:packetData];
+    if (!packetDataHasValidLength) {
+        if (error) {
+            *error = [NSError errorWithDomain:@"BLEDataPacketParseError" code:100 userInfo:@{NSLocalizedDescriptionKey: @"Packet data has invalid length"}];
+        }
+        return;
+    }
+    BOOL validSig = [self hasValidSignature];
+    if (!validSig) {
+        if (error) {
+            *error = [NSError errorWithDomain:@"BLEDataPacketParseError" code:101 userInfo:@{NSLocalizedDescriptionKey: @"Packet data has invalid signature"}];
+        }
+        return;
+    }
 }
 
 //[[version=1][timestamp=8][sender_public_key=32][data=n]][signature=64]

@@ -26,6 +26,13 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     [DDLog addLogger:[DDTTYLogger sharedInstance]];
     [DDLog addLogger:[DDASLLogger sharedInstance]];
+    
+    /*
+    [[BLEDatabaseManager sharedInstance].readWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        [transaction removeAllObjectsInAllCollections];
+    }];
+    */
+     
     NSArray *centralManagerIdentifiers = launchOptions[UIApplicationLaunchOptionsBluetoothCentralsKey];
     if (centralManagerIdentifiers) {
         DDLogInfo(@"didFinishLaunchingWithOptions with UIApplicationLaunchOptionsBluetoothCentralsKey %@", centralManagerIdentifiers);
@@ -54,7 +61,7 @@
         [BLELocalPeer setPrimaryIdentity:localPeer];
     }
     self.transportStorage = [[BLETransportStorage alloc] init];
-    self.transportManager = [[BLETransportManager alloc] initWithDataStorage:self.transportStorage];
+    self.transportManager = [[BLETransportManager sharedManager] addDataStorage:self.transportStorage];
     
     if ([[UIApplication sharedApplication] respondsToSelector:@selector(registerUserNotificationSettings:)]) {
         UIUserNotificationSettings *notificationSettings = [UIUserNotificationSettings settingsForTypes:UIUserNotificationTypeAlert | UIUserNotificationTypeSound categories:nil];
@@ -97,7 +104,15 @@
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application {
-    // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+    [[BLETransportManager sharedManager] disconnectFromPeers];
+    [BLETransportManager sharedManager].remoteDevices = nil;
+    [[BLEDatabaseManager sharedInstance].readWriteConnection readWriteWithBlock:^(YapDatabaseReadWriteTransaction *transaction) {
+        [transaction enumerateKeysInCollection:[[BLERemotePeer class] yapCollection] usingBlock:^(NSString *key, BOOL *stop) {
+            BLERemotePeer *peer = [transaction objectForKey:key inCollection:[[BLERemotePeer class] yapCollection]];
+            //NSLog(@"possible messages to send: %@", message);
+            peer.deviceID = nil;
+        }];
+    }];
 }
 
 @end

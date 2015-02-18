@@ -10,6 +10,10 @@
 #import "BLECrypto.h"
 #import "BLEMessagePacket.h"
 #import "BLEIdentityPacket.h"
+#import "BLETransportManager.h"
+#import "BLEReadSendQueue.h"
+#import "BLEDatabaseManager.h"
+
 
 static NSString * const kBLEBroadcasterRestoreIdentifier = @"kBLEBroadcasterRestoreIdentifier";
 
@@ -52,7 +56,6 @@ static NSString * const kBLEMessagesWriteCharacteristicUUIDString = @"6EAEC220-5
                                                                    options:@{CBPeripheralManagerOptionRestoreIdentifierKey: kBLEBroadcasterRestoreIdentifier,
                                                                              CBPeripheralManagerOptionShowPowerAlertKey: @YES}];
         _payloadCache = [NSMutableDictionary dictionary];
-        _identitiesToCentralCache = [NSMutableDictionary dictionary];
     }
     return self;
 }
@@ -63,7 +66,7 @@ static NSString * const kBLEMessagesWriteCharacteristicUUIDString = @"6EAEC220-5
             self.meshChatService = [[CBMutableService alloc] initWithType:[BLEBroadcaster meshChatServiceUUID] primary:YES];
             
             self.messagesReadCharacteristic = [[CBMutableCharacteristic alloc] initWithType:[BLEBroadcaster messagesReadCharacteristicUUID]
-                                                                                 properties:CBCharacteristicPropertyRead | CBCharacteristicPropertyIndicate
+                                                                                 properties:CBCharacteristicPropertyNotify | CBCharacteristicPropertyIndicate
                                                                                       value:nil
                                                                                 permissions:CBAttributePermissionsReadable];
             self.messagesWriteCharacteristic = [[CBMutableCharacteristic alloc] initWithType:[BLEBroadcaster messagesWriteCharacteristicUUID]
@@ -129,7 +132,7 @@ static NSString * const kBLEMessagesWriteCharacteristicUUIDString = @"6EAEC220-5
 #pragma mark - CBPeripheralManagerDelegate methods
 
 - (void)peripheralManagerDidUpdateState:(CBPeripheralManager *)peripheral {
-    DDLogVerbose(@"%@: %@ %d", THIS_FILE, THIS_METHOD, (int)peripheral.state);
+    //DDLogVerbose(@"%@: %@ %d", THIS_FILE, THIS_METHOD, (int)peripheral.state);
     if (peripheral.state == CBPeripheralManagerStatePoweredOn) {
         [self start];
     }
@@ -162,7 +165,7 @@ static NSString * const kBLEMessagesWriteCharacteristicUUIDString = @"6EAEC220-5
                 } else if ([uuid isEqual:[BLEBroadcaster identityWriteCharacteristicUUID]]) {
                     self.identityWriteCharacteristic = characteristic;
                 }
-                DDLogInfo(@"Restored characteristic: %@", characteristic);
+                //DDLogInfo(@"Restored characteristic: %@", characteristic);
             }];
             *stop = YES;
         }
@@ -173,149 +176,124 @@ static NSString * const kBLEMessagesWriteCharacteristicUUIDString = @"6EAEC220-5
 
 - (void)peripheralManager:(CBPeripheralManager *)peripheral didAddService:(CBService *)service error:(NSError *)error {
     if (error) {
-        DDLogError(@"Error starting service: %@", error.description);
+        //DDLogError(@"Error starting service: %@", error.description);
     } else {
-        DDLogVerbose(@"%@: %@ %@", THIS_FILE, THIS_METHOD, service);
+        //DDLogVerbose(@"%@: %@ %@", THIS_FILE, THIS_METHOD, service);
     }
 }
 
 - (void)peripheralManager:(CBPeripheralManager *)peripheral central:(CBCentral *)central didSubscribeToCharacteristic:(CBCharacteristic *)characteristic {
-    DDLogVerbose(@"%@: %@ %@ %@", THIS_FILE, THIS_METHOD, central, characteristic);
+    BLERemotePeer *peer = [self.dataStorage transport:self peerForDevice:central];
+    peer.centralConnected = YES;
+    NSLog(@"Central did subscribe to us");
+    //DDLogVerbose(@"%@: %@ %@ %@", THIS_FILE, THIS_METHOD, central, characteristic);
 }
 
 - (void)peripheralManager:(CBPeripheralManager *)peripheral central:(CBCentral *)central didUnsubscribeFromCharacteristic:(CBCharacteristic *)characteristic {
-    DDLogVerbose(@"%@: %@ %@ %@", THIS_FILE, THIS_METHOD, central, characteristic);
+    BLERemotePeer *peer = [self.dataStorage transport:self peerForDevice:central];
+    peer.centralConnected = NO;
+    NSLog(@"did unsubscribe");
+    NSLog(@"peer: %@", peer);
+    NSLog(@"peripheral: %@ . central: %@", peer.peripheral, peer.central);
+    //did disconnect.
+    //remove peer for device
+    //DDLogVerbose(@"%@: %@ %@ %@", THIS_FILE, THIS_METHOD, central, characteristic);
 }
 
-- (BLEIdentityPacket*) identityForCentral:(CBCentral*)central {
-    BLEIdentityPacket *identity = [self.identitiesToCentralCache objectForKey:central.identifier];
-    return identity;
-}
-
-- (void) setIdentity:(BLEIdentityPacket*)identity
-          forCentral:(CBCentral*)central {
-    [self.identitiesToCentralCache setObject:identity forKey:central.identifier];
-}
-
-- (void)peripheralManager:(CBPeripheralManager *)peripheral didReceiveReadRequest:(CBATTRequest *)request {
-    CBUUID *requestUUID = request.characteristic.UUID;
-    NSData *responseData = nil;
-    CBATTError result = CBATTErrorReadNotPermitted;
-    CBCentral *central = request.central;
-    
-
-    // This is a fresh request. Send complete data payload and cache it
-    // in case we get a follow-up request for a later offset
-    if ([requestUUID isEqual:self.messagesReadCharacteristic.UUID]) {
-        result = CBATTErrorSuccess;
-        BLEIdentityPacket *peer = [self identityForCentral:central];
-        if (request.offset > 0) {
-            responseData = [self.payloadCache objectForKey:requestUUID];
-        } else {
-            BLEMessagePacket *messagePacket = [self.dataStorage transport:self nextOutgoingMessageForPeer:peer];
-            if (!messagePacket) {
-                return;
-            }
-            responseData = [messagePacket packetData];
-            BOOL shouldSendData = YES;
-            if (peer) {
-                
-                // Don't send dupe packets
-                if (shouldSendData == NO) {
-                    return;
-                }
-            }
-            [self.payloadCache setObject:responseData forKey:requestUUID];
-            [self.dataStorage transport:self willWriteMessage:messagePacket toPeer:peer];
-        }
-        [self sendResponseToPeripheral:peripheral withRequest:request payload:responseData result:result];
-        DDLogInfo(@"Peripheral Responding to message read with %d bytes", (int)responseData.length);
-    } else if ([requestUUID isEqual:self.identityReadCharacteristic.UUID]) {
-        BLEIdentityPacket *centralPeer = [self identityForCentral:central];
-        
-        BLEIdentityPacket *identity = [self.dataStorage transport:self nextOutgoingIdentityForPeer:centralPeer];
-        if (identity) {
-            result = CBATTErrorSuccess; // For now let the remote central decide when to stop re-issuing idenetity requests
-            responseData = [identity packetData];
-            [_payloadCache setObject:responseData forKey:requestUUID]; // We shouldn't ever have to packetize identity responses in the v1 protocol
-                [self.dataStorage transport:self willWriteIdentity:identity toPeer:centralPeer];
-            DDLogInfo(@"Peripheral Responding to id read with %d bytes", (int)responseData.length);
-        } else {
-            DDLogInfo(@"No more identities to send");
-        }
-        [self sendResponseToPeripheral:peripheral withRequest:request payload:responseData result:result];
+- (void)writeMessage:(NSData*)data forPeer:(BLERemotePeer*)peer {
+    NSLog(@"remote central: %@", peer.central);
+    if ([_peripheralManager updateValue:data forCharacteristic:self.messagesReadCharacteristic onSubscribedCentrals:@[[peer central]]]) {
+        NSLog(@"updated value, %lu", (unsigned long)data.length);
+        [[BLEReadSendQueue sharedManager] sentLastChunk];
+        [[BLEReadSendQueue sharedManager] sendNextChunk];
     } else {
-        DDLogInfo(@"Peripheral did not recognize read characteristic %@", requestUUID);
+        NSLog(@"failed to update value");
     }
-}
-
-- (void) sendResponseToPeripheral:(CBPeripheralManager *)peripheral withRequest:(CBATTRequest *)request payload:(NSData *) responseData result:(CBATTError) result{
-    if (responseData != nil) {
-        if (request.offset > responseData.length) {
-            [peripheral respondToRequest:request
-                              withResult:CBATTErrorInvalidOffset];
-            return;
-        }
-        request.value = [responseData
-                         subdataWithRange:NSMakeRange(request.offset,
-                                                      responseData.length - request.offset)];
-        DDLogInfo(@"Peripheral Sending data len %d", (int)request.value.length);
-    }
-    DDLogVerbose(@"%@: %@ %@", THIS_FILE, THIS_METHOD, request);
-    [peripheral respondToRequest:request withResult:result];
-}
-
-- (void)peripheralManager:(CBPeripheralManager *)peripheral didReceiveWriteRequests:(NSArray *)requests {
-    DDLogVerbose(@"%@: %@ %@", THIS_FILE, THIS_METHOD, requests);
-    [requests enumerateObjectsUsingBlock:^(CBATTRequest *request, NSUInteger idx, BOOL *stop) {
-        CBUUID *uuid = request.characteristic.UUID;
-        CBATTError result = CBATTErrorWriteNotPermitted;
-        NSData *requestData = request.value;
-        DDLogInfo(@"Peripheral Consuming write with %d bytes", (int)requestData.length);
-
-        CBCentral *central = request.central;
-        if ([uuid isEqual:self.messagesWriteCharacteristic.UUID]) {
-            NSData *fullPacketData = nil;
-            if (requestData.length == kBLEMessageTotalLength) {
-                fullPacketData = requestData;
-            } else if (request.offset > 0) {
-                // This is a framework-generated follow-up request for another section of data
-                NSMutableData *accumulatedRequestData = [[self.payloadCache objectForKey:uuid] mutableCopy];
-                [accumulatedRequestData appendData:requestData];
-                if (accumulatedRequestData.length == kBLEMessageTotalLength) { // TODO remove hardcode
-                    fullPacketData = accumulatedRequestData;
-                } else {
-                    [self.payloadCache setObject:accumulatedRequestData forKey:uuid];
-                }
-            }
-            if (fullPacketData) {
-                DDLogInfo(@"Peripheral received complete message write!");
-                // We've received a complete message
-                BLEMessagePacket *message = [self.dataStorage transport:self messageForMessageData:fullPacketData];
-                BLEIdentityPacket *centralPeer = [self identityForCentral:central];
-                [self.dataStorage transport:self receivedMessage:message fromPeer:centralPeer];
-            }
-        } else if ([uuid isEqual:self.identityWriteCharacteristic.UUID]) {
-            // Identities never need packetization
-            result = CBATTErrorSuccess;
-            BLEIdentityPacket *centralPeer = [self identityForCentral:central];
-            BLEIdentityPacket *incomingIdentity = [self.dataStorage transport:self identityForIdentityData:requestData];
-            if (!centralPeer) {
-                [self setIdentity:incomingIdentity forCentral:central];
-                centralPeer = incomingIdentity;
-            }
-            [self.dataStorage transport:self receivedIdentity:incomingIdentity fromPeer:centralPeer];
-        } else {
-            DDLogError(@"Peripheral unrecognized write: %@", request.value);
-        }
-        // Always send response. It will be interpreted by the remote central as "ready for more data",
-        // or "request complete" depending on what state of the request we're at
-        [peripheral respondToRequest:request withResult:result];
-    }];
 }
 
 - (void)peripheralManagerIsReadyToUpdateSubscribers:(CBPeripheralManager *)peripheral {
-    DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
+    NSLog(@"ready to update");
+    [[BLEReadSendQueue sharedManager] sendNextChunk];
+}
+
+- (void)peripheralManager:(CBPeripheralManager *)peripheral didReceiveReadRequest:(CBATTRequest *)request {
+    
+    NSLog(@"did receive read request");
+    BLERemotePeer *peer = [self.dataStorage transport:self peerForDevice:request.central];
+    if ([request.characteristic.UUID.UUIDString isEqualToString:[[BLEBroadcaster identityReadCharacteristicUUID] UUIDString]]) {
+        if (request.offset > request.characteristic.value.length) {
+            [_peripheralManager respondToRequest:request withResult:CBATTErrorInvalidOffset];
+        } else if (request.offset == 0) {
+            BLEIdentityPacket *identity = [self.dataStorage transport:self nextOutgoingIdentityForPeer:peer];
+            if (identity) {
+                NSLog(@"Responding to read request with my identity");
+                [self.dataStorage transport:self willWriteIdentity:identity toPeer:peer];
+            }
+            request.value = identity.packetData;
+            [_peripheralManager respondToRequest:request withResult:CBATTErrorSuccess];
+        } else {
+            NSAssert(true, @"request offset exceded in identity handler");
+        }
+    }
+
+}
+
+- (void)peripheralManager:(CBPeripheralManager *)peripheral didReceiveWriteRequests:(NSArray *)requests {
+    
+    NSLog(@"did receive write request");
+    [requests enumerateObjectsUsingBlock:^(CBATTRequest* request, NSUInteger idx, BOOL *stop) {
+        BLERemotePeer *peer = [self.dataStorage transport:self peerForDevice:request.central];
+        if ([request.characteristic.UUID.UUIDString isEqualToString:[[BLEBroadcaster identityWriteCharacteristicUUID] UUIDString]]) {
+            NSLog(@"received identity");
+            [self.dataStorage transport:self addIdentity:request.value forPeer:peer];
+            [_peripheralManager respondToRequest:request withResult:CBATTErrorSuccess];
+            [BLETransportManager doubleConnectionGuard:peer type:PeripheralGuard success:^() {
+                NSLog(@"Received write with identity, should be peripheral, sending response.");
+                [self sendMessagesToPeer:peer];
+                [_peripheralManager respondToRequest:request withResult:CBATTErrorSuccess];   
+            } failure:^() {
+                NSLog(@"Received write with identity but shouldn't be peripheral.");
+                [_peripheralManager respondToRequest:request withResult:CBATTErrorSuccess];
+                return;
+            }];
+        } else if ([request.characteristic.UUID.UUIDString isEqualToString:[[BLEBroadcaster messagesWriteCharacteristicUUID] UUIDString]]) {
+            NSLog(@"receiving write request with length: %lu", (unsigned long)request.characteristic.value.length);
+            if (request.offset > request.characteristic.value.length) {
+                [_peripheralManager respondToRequest:request withResult:CBATTErrorInvalidOffset];
+            } else {
+                if (request.value.length > 0) {
+                    NSLog(@"data to append: %@", [request.value subdataWithRange:NSMakeRange(request.offset, request.value.length - request.offset)]);
+                    [peer.receivedData appendData:[request.value subdataWithRange:NSMakeRange(request.offset, request.value.length - request.offset)]];
+                    [_peripheralManager respondToRequest:request withResult:CBATTErrorSuccess];
+                } else {
+                    if (peer.receivedData.length > 0) {
+                        NSLog(@"received data length: %lu", (unsigned long)peer.receivedData.length);
+                        BLEMessagePacket *message = [self.dataStorage transport:self messageForMessageData:peer.receivedData];
+                        [self.dataStorage transport:self receivedMessage:message fromPeer:peer];
+                        [peer.receivedData setLength:0];
+                        [_peripheralManager respondToRequest:request withResult:CBATTErrorSuccess];
+                    } else {
+                        [peer doneReceivingMessages];
+                    }
+                }
+            }
+        }
+    }];
+}
+
+- (void)sendMessagesToPeer:(BLERemotePeer*)peer {
+    [self.dataStorage transport:self getAllOutgoingMessagesForPeer:peer success:^(NSArray *messages) {
+        for (BLEMessagePacket *message in messages) {
+            [self.dataStorage transport:self willWriteMessage:message toPeer:peer];
+            [[BLEReadSendQueue sharedManager] addMessageToQueue:message.packetData forPeer:peer];
+        }
+        [[BLEReadSendQueue sharedManager] addMessageToQueue:[NSData data] forPeer:peer success:^{
+            NSLog(@"adding success block bc");
+            [[BLEReadSendQueue sharedManager] addSuccessBlockToQueue:^{
+                [peer doneSendingMessages];
+            }];
+        }];
+    }];
 }
 
 @end
