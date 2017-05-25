@@ -621,6 +621,34 @@
 				INFOPLIST_FILE = BLEMeshChat/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+					"/usr/lib/libc++.dylib",
+					"-l\"CocoaLumberjack\"",
+					"-l\"FormatterKit\"",
+					"-l\"IGIdenticon\"",
+					"-l\"InAppSettingsKit\"",
+					"-l\"JSQMessagesViewController\"",
+					"-l\"JSQSystemSoundPlayer\"",
+					"-l\"Mantle\"",
+					"-l\"PureLayout\"",
+					"-l\"YapDatabase\"",
+					"-l\"libsodium\"",
+					"-l\"sqlite3\"",
+					"-framework",
+					"\"AudioToolbox\"",
+					"-framework",
+					"\"CoreGraphics\"",
+					"-framework",
+					"\"Foundation\"",
+					"-framework",
+					"\"MessageUI\"",
+					"-framework",
+					"\"QuartzCore\"",
+					"-framework",
+					"\"UIKit\"",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -635,6 +663,34 @@
 				INFOPLIST_FILE = BLEMeshChat/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+					"/usr/lib/libc++.dylib",
+					"-l\"CocoaLumberjack\"",
+					"-l\"FormatterKit\"",
+					"-l\"IGIdenticon\"",
+					"-l\"InAppSettingsKit\"",
+					"-l\"JSQMessagesViewController\"",
+					"-l\"JSQSystemSoundPlayer\"",
+					"-l\"Mantle\"",
+					"-l\"PureLayout\"",
+					"-l\"YapDatabase\"",
+					"-l\"libsodium\"",
+					"-l\"sqlite3\"",
+					"-framework",
+					"\"AudioToolbox\"",
+					"-framework",
+					"\"CoreGraphics\"",
+					"-framework",
+					"\"Foundation\"",
+					"-framework",
+					"\"MessageUI\"",
+					"-framework",
+					"\"QuartzCore\"",
+					"-framework",
+					"\"UIKit\"",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
