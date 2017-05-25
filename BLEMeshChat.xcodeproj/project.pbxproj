@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		5AFAD98C8D32B5D6E0EF9FA3 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D875EBA6B1062FD39A2B28A /* libPods.a */; };
+		47965B2553C5C2168C65E47A /* libPods-BLEMeshChat.a in Frameworks */ = {isa = PBXBuildFile; fileRef = ACAD8B65C95AD49F25D53527 /* libPods-BLEMeshChat.a */; };
 		D90CF5E519EC8D2E006222AB /* BLERemotePeer.m in Sources */ = {isa = PBXBuildFile; fileRef = D90CF5E419EC8D2E006222AB /* BLERemotePeer.m */; };
 		D90CF5E819EC8D3C006222AB /* BLEMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = D90CF5E719EC8D3C006222AB /* BLEMessage.m */; };
 		D90CF5EB19EC8DD8006222AB /* BLEMessagesViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D90CF5EA19EC8DD8006222AB /* BLEMessagesViewController.m */; };
@@ -46,8 +46,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		2D1361F7F24E9C6CD2AF9A4B /* Pods.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.debug.xcconfig; path = "Pods/Target Support Files/Pods/Pods.debug.xcconfig"; sourceTree = "<group>"; };
-		6D875EBA6B1062FD39A2B28A /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		138F7DC38BE5DE0E9E76E43E /* Pods-BLEMeshChat.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BLEMeshChat.debug.xcconfig"; path = "Pods/Target Support Files/Pods-BLEMeshChat/Pods-BLEMeshChat.debug.xcconfig"; sourceTree = "<group>"; };
+		2AA6E2B7F85FD47BB1B2AB28 /* Pods-BLEMeshChat.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BLEMeshChat.release.xcconfig"; path = "Pods/Target Support Files/Pods-BLEMeshChat/Pods-BLEMeshChat.release.xcconfig"; sourceTree = "<group>"; };
+		ACAD8B65C95AD49F25D53527 /* libPods-BLEMeshChat.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-BLEMeshChat.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D90CF5E319EC8D2E006222AB /* BLERemotePeer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLERemotePeer.h; sourceTree = "<group>"; };
 		D90CF5E419EC8D2E006222AB /* BLERemotePeer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLERemotePeer.m; sourceTree = "<group>"; };
 		D90CF5E619EC8D3C006222AB /* BLEMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLEMessage.h; sourceTree = "<group>"; };
@@ -101,7 +102,6 @@
 		D9F49A681A0EED030035B1C8 /* BLETransport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLETransport.h; sourceTree = "<group>"; };
 		D9F49A691A0EED030035B1C8 /* BLETransport.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BLETransport.m; sourceTree = "<group>"; };
 		D9F49A6B1A0EED450035B1C8 /* BLEDataStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLEDataStorage.h; sourceTree = "<group>"; };
-		E1441CDBDA6F311CDCBA029F /* Pods.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.release.xcconfig; path = "Pods/Target Support Files/Pods/Pods.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -110,7 +110,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D9C4261319E8A617004F7335 /* CoreBluetooth.framework in Frameworks */,
-				5AFAD98C8D32B5D6E0EF9FA3 /* libPods.a in Frameworks */,
+				47965B2553C5C2168C65E47A /* libPods-BLEMeshChat.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -128,16 +128,16 @@
 			isa = PBXGroup;
 			children = (
 				D9C4261219E8A617004F7335 /* CoreBluetooth.framework */,
-				6D875EBA6B1062FD39A2B28A /* libPods.a */,
+				ACAD8B65C95AD49F25D53527 /* libPods-BLEMeshChat.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		3D0ACF8749E6A76A6086D1C1 /* Pods */ = {
+		1CD969756BBCB7C8898D680B /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				2D1361F7F24E9C6CD2AF9A4B /* Pods.debug.xcconfig */,
-				E1441CDBDA6F311CDCBA029F /* Pods.release.xcconfig */,
+				138F7DC38BE5DE0E9E76E43E /* Pods-BLEMeshChat.debug.xcconfig */,
+				2AA6E2B7F85FD47BB1B2AB28 /* Pods-BLEMeshChat.release.xcconfig */,
 			);
 			name = Pods;
 			sourceTree = "<group>";
@@ -217,8 +217,8 @@
 				D9C425E019E89D9D004F7335 /* BLEMeshChat */,
 				D9C425FA19E89D9D004F7335 /* BLEMeshChatTests */,
 				D9C425DF19E89D9D004F7335 /* Products */,
-				3D0ACF8749E6A76A6086D1C1 /* Pods */,
 				0702FD58DC78894CD193CF6B /* Frameworks */,
+				1CD969756BBCB7C8898D680B /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -329,11 +329,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = D9C4260119E89D9D004F7335 /* Build configuration list for PBXNativeTarget "BLEMeshChat" */;
 			buildPhases = (
-				67C04B84077C73E3DF903BFE /* Check Pods Manifest.lock */,
+				79EDC14DA23EF37768E61DC2 /* [CP] Check Pods Manifest.lock */,
 				D9C425DA19E89D9D004F7335 /* Sources */,
 				D9C425DB19E89D9D004F7335 /* Frameworks */,
 				D9C425DC19E89D9D004F7335 /* Resources */,
-				C6324647BEA53F552A63CA40 /* Copy Pods Resources */,
+				6365FF4D1B3CA5ADD1FC8F32 /* [CP] Embed Pods Frameworks */,
+				8A4ABE7A3669A686D0CFD930 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -427,34 +428,49 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		67C04B84077C73E3DF903BFE /* Check Pods Manifest.lock */ = {
+		6365FF4D1B3CA5ADD1FC8F32 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "Check Pods Manifest.lock";
+			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-BLEMeshChat/Pods-BLEMeshChat-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		C6324647BEA53F552A63CA40 /* Copy Pods Resources */ = {
+		79EDC14DA23EF37768E61DC2 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "Copy Pods Resources";
+			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods/Pods-resources.sh\"\n";
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		8A4ABE7A3669A686D0CFD930 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-BLEMeshChat/Pods-BLEMeshChat-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -597,7 +613,7 @@
 		};
 		D9C4260219E89D9D004F7335 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 2D1361F7F24E9C6CD2AF9A4B /* Pods.debug.xcconfig */;
+			baseConfigurationReference = 138F7DC38BE5DE0E9E76E43E /* Pods-BLEMeshChat.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer: Chris Ballinger (9P62QGET7G)";
@@ -605,13 +621,41 @@
 				INFOPLIST_FILE = BLEMeshChat/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+					"/usr/lib/libc++.dylib",
+					"-l\"CocoaLumberjack\"",
+					"-l\"FormatterKit\"",
+					"-l\"IGIdenticon\"",
+					"-l\"InAppSettingsKit\"",
+					"-l\"JSQMessagesViewController\"",
+					"-l\"JSQSystemSoundPlayer\"",
+					"-l\"Mantle\"",
+					"-l\"PureLayout\"",
+					"-l\"YapDatabase\"",
+					"-l\"libsodium\"",
+					"-l\"sqlite3\"",
+					"-framework",
+					"\"AudioToolbox\"",
+					"-framework",
+					"\"CoreGraphics\"",
+					"-framework",
+					"\"Foundation\"",
+					"-framework",
+					"\"MessageUI\"",
+					"-framework",
+					"\"QuartzCore\"",
+					"-framework",
+					"\"UIKit\"",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
 		};
 		D9C4260319E89D9D004F7335 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = E1441CDBDA6F311CDCBA029F /* Pods.release.xcconfig */;
+			baseConfigurationReference = 2AA6E2B7F85FD47BB1B2AB28 /* Pods-BLEMeshChat.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Chris Ballinger (4T8JLQR6GR)";
@@ -619,6 +663,34 @@
 				INFOPLIST_FILE = BLEMeshChat/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+					"/usr/lib/libc++.dylib",
+					"-l\"CocoaLumberjack\"",
+					"-l\"FormatterKit\"",
+					"-l\"IGIdenticon\"",
+					"-l\"InAppSettingsKit\"",
+					"-l\"JSQMessagesViewController\"",
+					"-l\"JSQSystemSoundPlayer\"",
+					"-l\"Mantle\"",
+					"-l\"PureLayout\"",
+					"-l\"YapDatabase\"",
+					"-l\"libsodium\"",
+					"-l\"sqlite3\"",
+					"-framework",
+					"\"AudioToolbox\"",
+					"-framework",
+					"\"CoreGraphics\"",
+					"-framework",
+					"\"Foundation\"",
+					"-framework",
+					"\"MessageUI\"",
+					"-framework",
+					"\"QuartzCore\"",
+					"-framework",
+					"\"UIKit\"",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

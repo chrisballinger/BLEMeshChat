@@ -4,48 +4,48 @@ PODS:
   - CocoaLumberjack/Core (1.9.2)
   - CocoaLumberjack/Extensions (1.9.2):
     - CocoaLumberjack/Core
-  - FormatterKit/TimeIntervalFormatter (1.8.0)
-  - IGIdenticon (0.2.1)
-  - InAppSettingsKit (2.4.3)
-  - JSQMessagesViewController (6.1.3):
-    - JSQSystemSoundPlayer (~> 2.0.1)
+  - FormatterKit/TimeIntervalFormatter (1.6.0)
+  - IGIdenticon (0.2)
+  - InAppSettingsKit (2.2)
+  - JSQMessagesViewController (6.0.0):
+    - JSQSystemSoundPlayer (~> 2.0.0)
   - JSQSystemSoundPlayer (2.0.1)
-  - libsodium (1.0.2)
-  - Mantle (1.5.4):
-    - Mantle/extobjc (= 1.5.4)
-  - Mantle/extobjc (1.5.4)
-  - PureLayout (2.0.5)
-  - YapDatabase (2.5.4):
-    - YapDatabase/standard (= 2.5.4)
-  - YapDatabase/common (2.5.4):
+  - libsodium (1.0.3)
+  - Mantle (1.4):
+    - Mantle/extobjc (= 1.4)
+  - Mantle/extobjc (1.4)
+  - PureLayout (2.0.0)
+  - YapDatabase (2.6.5):
+    - YapDatabase/standard (= 2.6.5)
+  - YapDatabase/standard (2.6.5):
     - CocoaLumberjack (~> 1)
-  - YapDatabase/standard (2.5.4):
-    - YapDatabase/common
 
 DEPENDENCIES:
-  - FormatterKit/TimeIntervalFormatter (~> 1.6)
-  - IGIdenticon (~> 0.2.0)
-  - InAppSettingsKit (~> 2.2)
-  - JSQMessagesViewController (~> 6.0)
+  - FormatterKit/TimeIntervalFormatter (= 1.6)
+  - IGIdenticon (= 0.2.0)
+  - InAppSettingsKit (= 2.2)
+  - JSQMessagesViewController (= 6.0)
   - libsodium (from `Podspecs/libsodium.podspec.json`)
-  - Mantle (~> 1.4)
-  - PureLayout (~> 2.0)
-  - YapDatabase (~> 2.5)
+  - Mantle (= 1.4)
+  - PureLayout (= 2.0)
+  - YapDatabase (= 2.6.5)
 
 EXTERNAL SOURCES:
   libsodium:
     :podspec: Podspecs/libsodium.podspec.json
 
 SPEC CHECKSUMS:
-  CocoaLumberjack: 205769c032b5fef85b92472046bcc8b7e7c8a817
-  FormatterKit: 547a808c41172136a3f3acb424ac9361d38bb32f
-  IGIdenticon: e644cd0e5a41a86082ab4c06221ca5bf45ea70bb
-  InAppSettingsKit: 315e2a196a06921f8f83de01a855ed98dc69851e
-  JSQMessagesViewController: e93a288a9662d4519c95a28a8c0eec10beae1bfc
-  JSQSystemSoundPlayer: 55528c699a283aae2220d3ae7b8b527d2ecef4b4
-  libsodium: d1b482e7628e0298de350375a4ab981b5cc8c71b
-  Mantle: d5fbaf30fbc58031223af13812c060e15934a1fe
-  PureLayout: 63a3257320223e8edddcd3afb407445f85a6bf74
-  YapDatabase: c1d6912df1b4a160f7373ee7657d360e29bb00fd
+  CocoaLumberjack: 628fca2e88ef06f7cf6817309aa405f325d9a6fa
+  FormatterKit: 28ff2b3f1c8fc61057f95d1ccdbbff66297ed3f7
+  IGIdenticon: 4e45ef909bc8ca4bf8de105e830309a44d993e5d
+  InAppSettingsKit: 6ca7c85ea59e686192cba78fef57cf1e560444f8
+  JSQMessagesViewController: ce414df02c16eddefdf802dd7e3b767eb0e55573
+  JSQSystemSoundPlayer: c5850e77a4363ffd374cd851154b9af93264ed8d
+  libsodium: 0c17cbfffdde99b54db07536813119228be1b31a
+  Mantle: 55636cc28e4cf83f69baddd8de15582f9ebcf634
+  PureLayout: 9234718175a20a5f7f0ce11871d82013754fe2d4
+  YapDatabase: 814f9ff862a95c1e581d93335a4020482b69155b
 
-COCOAPODS: 0.35.0
+PODFILE CHECKSUM: 39e76855d2538b2978af12734f8c08ee09f38571
+
+COCOAPODS: 1.2.0

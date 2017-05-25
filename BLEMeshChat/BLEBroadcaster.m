@@ -151,16 +151,16 @@ static NSString * const kBLEMessagesWriteCharacteristicUUIDString = @"6EAEC220-5
         if ([service.UUID isEqual:[BLEBroadcaster meshChatServiceUUID]]) {
             self.meshChatService = service;
             DDLogInfo(@"Restored service: %@", service);
-            [self.meshChatService.characteristics enumerateObjectsUsingBlock:^(CBMutableCharacteristic *characteristic, NSUInteger idx, BOOL *stop) {
+            [self.meshChatService.characteristics enumerateObjectsUsingBlock:^(CBCharacteristic * _Nonnull characteristic, NSUInteger idx, BOOL * _Nonnull stop) {
                 CBUUID *uuid = characteristic.UUID;
                 if ([uuid isEqual:[BLEBroadcaster messagesReadCharacteristicUUID]]) {
-                    self.messagesReadCharacteristic = characteristic;
+                    self.messagesReadCharacteristic = characteristic.mutableCopy;
                 } else if ([uuid isEqual:[BLEBroadcaster messagesWriteCharacteristicUUID]]) {
-                    self.messagesWriteCharacteristic = characteristic;
+                    self.messagesWriteCharacteristic = characteristic.mutableCopy;
                 } else if ([uuid isEqual:[BLEBroadcaster identityReadCharacteristicUUID]]) {
-                    self.identityReadCharacteristic = characteristic;
+                    self.identityReadCharacteristic = characteristic.mutableCopy;
                 } else if ([uuid isEqual:[BLEBroadcaster identityWriteCharacteristicUUID]]) {
-                    self.identityWriteCharacteristic = characteristic;
+                    self.identityWriteCharacteristic = characteristic.mutableCopy;
                 }
                 DDLogInfo(@"Restored characteristic: %@", characteristic);
             }];
